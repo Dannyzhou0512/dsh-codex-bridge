@@ -102,7 +102,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "typecheck": "tsc -p tsconfig.host.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "typecheck": "npm run build && tsc -p tsconfig.host.json --noEmit && tsc -p tsconfig.client.json --noEmit",
     "test": "npm run build && node scripts/pack-test.mjs && node --test tests/*.test.mjs",
     "prepack": "npm run build"
   },
