@@ -56,7 +56,7 @@ npm test
 
 核心162项、UI12项以及实际解包回归通过；已验证真实单条导入、原生真实模型续聊和重启/去重。公开仓库只保留合成夹具和脱敏结论，真实会话、截图、配置及本机验收目录不上传。
 
-UI0.0.3已加固断线恢复、服务热替换和写入丢响应处理，仍是预览候选；新版本完整Desktop发布验收未完成。既有renderer崩溃根因未确认。rc.2整个Client factory抛错可阻塞Core前端初始化；公开禁用可恢复，但不能称为任意异常安全。正式真实批量尚未验收。详见[限制与恢复](docs/LIMITATIONS.md)与[发布前检查](docs/RELEASE_CHECKLIST.md)。
+UI0.0.3已加固断线恢复、服务热替换和写入丢响应处理，仍是预览候选；新版本完整Desktop发布验收未完成。既有renderer崩溃根因未确认。rc.2整个Client factory抛错可阻塞Core前端初始化；公开禁用可恢复，但不能称为任意异常安全。正式真实批量尚未验收。详见[限制与恢复](docs/LIMITATIONS.md)、[开源前验证](docs/OPEN_SOURCE_VALIDATION.md)与[发布前检查](docs/RELEASE_CHECKLIST.md)。
 
 ## 贡献与许可
 
