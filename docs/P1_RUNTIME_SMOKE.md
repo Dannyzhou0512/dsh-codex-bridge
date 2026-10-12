@@ -7,7 +7,7 @@
 - 独立 Dev Desktop/CLI 的实际位置由用户确认，版本严格为 DSH 0.2.0-rc.2。不要默认使用 PATH 中可能指向正式安装的 dsh。
 - 确认 Dev Desktop 启动实际采用 <isolated-dev-home>，并检查 Dev 日志/宿主路径报告；若仍指向正式 home，立即停止安装。
 - 不修改 <installed-harness-directory> 或 <production-home>；不授权 allow-version；不要把测试依赖复制进 Desktop 资源树。
-- 使用项目打包的 .artifacts/dsh-codex-bridge-0.0.1.tgz。此包无 client/adapter/导入命令，不能用于迁移。
+- 使用当前构建且已校验的主包 tarball。本清单只测试根 Host 健康入口；0.0.9 的独立 reader/CLI/importer API 不会由该入口自动启用。
 - 正常 Dev Desktop 初次启动可能初始化它自己的 Session/Workspace/default registry；这不是插件的写入。比较必须在已经启动、稳定的同一 Dev baseline 上完成，不能归因为 importer 行为。
 
 ## 准备命令（仅供随后由用户执行）
