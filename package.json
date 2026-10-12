@@ -1,0 +1,168 @@
+{
+  "name": "dsh-codex-bridge",
+  "version": "0.0.9",
+  "description": "DSH rc.2 Codex history bridge with an opt-in profile CLI and reviewed native imports.",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json",
+    "./codex": {
+      "types": "./lib/types/codex/index.d.ts",
+      "default": "./lib/codex/index.js"
+    },
+    "./converter": {
+      "types": "./lib/types/converter/index.d.ts",
+      "default": "./lib/converter/index.js"
+    },
+    "./workspace": {
+      "types": "./lib/types/workspace/index.d.ts",
+      "default": "./lib/workspace/index.js"
+    },
+    "./planner": {
+      "types": "./lib/types/planner/index.d.ts",
+      "default": "./lib/planner/index.js"
+    },
+    "./importer": {
+      "types": "./lib/types/importer/index.d.ts",
+      "default": "./lib/importer/index.js"
+    },
+    "./recovery": {
+      "types": "./lib/types/recovery/index.d.ts",
+      "default": "./lib/recovery/index.js"
+    },
+    "./batch": {
+      "types": "./lib/types/batch/index.d.ts",
+      "default": "./lib/batch/index.js"
+    },
+    "./cli": {
+      "types": "./lib/types/cli/index.d.ts",
+      "default": "./lib/cli/index.js"
+    }
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts",
+    "cordis.patch.yml",
+    "README.md",
+    "docs/P1_RUNTIME_SMOKE.md",
+    "lib/codex/*.js",
+    "docs/P2_PROTOCOL.md",
+    "lib/converter/*.js",
+    "docs/P4_CONVERTER.md",
+    "lib/workspace/*.js",
+    "docs/P5_WORKSPACE_MAPPER.md",
+    "lib/planner/*.js",
+    "docs/P6_IMPORT_PLANNER.md",
+    "lib/importer/*.js",
+    "docs/P7_SESSION_IMPORTER.md",
+    "lib/recovery/*.js",
+    "docs/P8_RECOVERY.md",
+    "lib/batch/*.js",
+    "docs/P9_BATCH_IMPORTER.md",
+    "lib/cli/*.js",
+    "docs/P10_CLI.md",
+    "docs/P10_CLI_CONFIG_EXAMPLE.json"
+  ],
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "verify:package": "node scripts/verify-package.mjs",
+    "audit:reference": "node scripts/audit-reference.mjs check",
+    "prepack": "npm run build",
+    "probe:codex": "npm run build && node scripts/probe-codex.mjs",
+    "verify:protocol": "node scripts/verify-protocol.mjs",
+    "schema:codex": "node scripts/generate-codex-schema.mjs",
+    "test:p3": "npm run build && node --test tests/p3.test.mjs",
+    "test:p4": "npm run build && node --test tests/converter.test.mjs",
+    "test:p5": "npm run build && node --test tests/workspace.test.mjs",
+    "test:p6": "npm run build && node --test tests/planner.test.mjs",
+    "test:p7": "npm run build && node --test tests/importer.test.mjs",
+    "test:p8": "npm run build && node --test tests/recovery.test.mjs",
+    "test:p9": "npm run build && node --test tests/batch.test.mjs",
+    "test:p10": "npm run build && node --test tests/cli.test.mjs",
+    "package:verified": "npm run build && node scripts/pack-and-verify.mjs",
+    "check:publish": "node scripts/check-publish.mjs"
+  },
+  "dependencies": {
+    "commander": "15.0.0",
+    "zod": "4.6.5"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-app-boot": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-persistence": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-title": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-workspace": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-cmdline": "0.2.0-rc.2"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/cordis-plugin-group": "1.0.4",
+    "@deepseek-ai/cordis-plugin-include": "1.0.9",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.5",
+    "@deepseek-ai/dsh": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent-default-model": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent-loop": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-app-boot": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-attachment-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-file-upload": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-modules": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-store": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-chat": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-cmdline": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-credentials-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-fs-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-invariants": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-persistence": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-persistence-jsonl": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-projection-cache": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-query-sqlite": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session-title": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-storage-domain": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-storage-json": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-typert-registry": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-workspace": "0.2.0-rc.2",
+    "@types/node": "24.19.1",
+    "ajv": "8.20.0",
+    "immer": "10.1.1",
+    "jsdom": "29.1.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "typescript": "6.0.3",
+    "zustand": "4.4.7"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dannyzhou0512/dsh-codex-bridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dannyzhou0512/dsh-codex-bridge/issues"
+  }
+}

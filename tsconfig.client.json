@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/client/dsh-codex-bridge-ui/tsconfig.client.json"
+    }
+  ]
+}

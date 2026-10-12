@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';import {execFileSync} from 'node:child_process';import {extname} from 'node:path';import assert from 'node:assert/strict';
+const files=[...new Set(execFileSync('git',['ls-files','--cached','--others','--exclude-standard','-z'],{encoding:'utf8',windowsHide:true}).split('\0').filter(Boolean))];const problems=[];
+const privateName=/(^|\/)(\.artifacts|node_modules|lib|\.git|\.env(?:\..*)?|PRIVATE[^/]*)(\/|$)|\.(tgz|png|jpe?g|sqlite|db|jsonl|pem|key)$/i;
+const credential=/\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-(?:proj-)?[A-Za-z0-9_-]{30,}|AKIA[0-9A-Z]{16})\b|https?:\/\/[^\s/]+:[^\s/@]+@/g;
+const localData=/[A-Za-z]:[\\/]Users[\\/](?!Example\b|Default\b|Public\b)[^\\/\s]+/;
+const sensitiveIndex=process.argv.indexOf('--sensitive-patterns-file');
+const sensitive=sensitiveIndex<0?[]:JSON.parse(await fs.readFile(process.argv[sensitiveIndex+1],'utf8'));
+assert.ok(Array.isArray(sensitive)&&sensitive.every(p=>typeof p==='string'&&p.length>0),'Invalid private pattern file');
+for(const path of files){if(privateName.test(path))problems.push({path,reason:'private-or-generated-file'});const data=await fs.readFile(path);if(data.includes(0)){problems.push({path,reason:'binary-file'});continue;}const text=data.toString('utf8');credential.lastIndex=0;if(credential.test(text))problems.push({path,reason:'credential-pattern'});if(localData.test(text)||sensitive.some(value=>text.includes(value)))problems.push({path,reason:'machine-specific-data'});if(path==='package-lock.json'||path.endsWith('/package-lock.json')){const lock=JSON.parse(text);for(const entry of Object.values(lock.packages??{}))if(typeof entry.resolved==='string'&&/file:(?:[a-z]:|\/)/i.test(entry.resolved))problems.push({path,reason:'absolute-file-lock-entry'});}}
+assert.equal(problems.length,0,JSON.stringify(problems,null,2));console.log(JSON.stringify({publishFileCount:files.length,privateGeneratedFilesExcluded:true,credentialPatternsDetected:0,machineSpecificDataDetected:0}));

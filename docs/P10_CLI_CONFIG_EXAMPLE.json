@@ -1,0 +1,79 @@
+{
+  "enabled": true,
+  "reader": {
+    "executable": "C:/Path/To/codex.exe",
+    "args": [
+      "app-server",
+      "--stdio"
+    ],
+    "cwd": "C:/Path/To/ExistingProject",
+    "codexHome": "C:/Path/To/CodexHome",
+    "clientInfo": {
+      "name": "dsh-codex-bridge",
+      "title": "Codex history import",
+      "version": "0.0.9"
+    },
+    "limits": {
+      "requestTimeoutMs": 30000,
+      "shutdownTimeoutMs": 3000,
+      "maxInFlight": 2,
+      "maxFrameBytes": 16777216
+    },
+    "readLimits": {
+      "pageSize": 50,
+      "maxPages": 100,
+      "maxThreads": 1000,
+      "maxItems": 10000,
+      "maxJsonDepth": 64
+    }
+  },
+  "scan": {
+    "sourceKinds": [
+      "cli",
+      "vscode",
+      "appServer"
+    ],
+    "archived": false
+  },
+  "conversion": {
+    "mode": "strict",
+    "titleMode": "pin",
+    "limits": {
+      "maxInputBytes": 16777216,
+      "maxResultBytes": 33554432,
+      "maxEvents": 20000,
+      "maxTextBytes": 8388608,
+      "maxToolDepth": 64,
+      "titleMaxBytes": 256
+    }
+  },
+  "mapping": {
+    "maxPathBytes": 32768,
+    "maxPlanBytes": 1048576,
+    "maxWorkspaces": 10000
+  },
+  "planning": {
+    "maxTargetEvents": 100000,
+    "maxTargetBytes": 67108864,
+    "readChunkEvents": 256,
+    "maxPlanBytes": 67108864
+  },
+  "importing": {
+    "maxReadEvents": 100000,
+    "maxReadBytes": 67108864,
+    "readChunkEvents": 256,
+    "maxResultBytes": 8192
+  },
+  "batch": {
+    "maxEntries": 50,
+    "maxSelectionBytes": 1048576,
+    "maxPlanBytes": 134217728,
+    "maxResultBytes": 8388608,
+    "maxItemResultBytes": 8192
+  },
+  "cache": "skip",
+  "io": {
+    "maxArgBytes": 1048576,
+    "maxOutputBytes": 150000000
+  }
+}

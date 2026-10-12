@@ -1,0 +1,6 @@
+interface:
+  display_name: "Codex → Harness 会话迁移"
+  short_description: "预览并审核选定 Codex 历史，通过插件 dry-run 后迁移为 Harness 原生会话"
+  default_prompt: "使用 $dsh-codex-bridge 预览我选定的 Codex 历史并做 dry-run，暂不实际导入。"
+policy:
+  allow_implicit_invocation: true

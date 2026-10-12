@@ -1,0 +1,179 @@
+{
+  "thread": {
+    "id": "fixture-thread",
+    "sessionId": "fixture-thread",
+    "forkedFromId": null,
+    "parentThreadId": null,
+    "preview": "公开用户请求",
+    "ephemeral": false,
+    "section": null,
+    "sectionEnteredAt": null,
+    "projectId": null,
+    "historyMode": "paginated",
+    "modelProvider": "openai",
+    "model": "fixture-latest-model",
+    "reasoningEffort": null,
+    "createdAt": 1700000000,
+    "updatedAt": 1700000010,
+    "recencyAt": null,
+    "status": {
+      "type": "notLoaded"
+    },
+    "path": "PRIVATE_ROLLOUT_PATH_SENTINEL",
+    "cwd": "C:\\fixture",
+    "cliVersion": "0.162.0-alpha.2",
+    "originator": "Codex Desktop",
+    "source": "vscode",
+    "threadSource": null,
+    "agentNickname": null,
+    "agentRole": null,
+    "gitInfo": null,
+    "name": "Synthetic fixture",
+    "turns": [
+      {
+        "id": "fixture-turn",
+        "status": "completed",
+        "itemsView": "full",
+        "error": null,
+        "startedAt": 1700000001,
+        "completedAt": 1700000002,
+        "durationMs": 1000,
+        "items": [
+          {
+            "type": "userMessage",
+            "id": "user-1",
+            "clientId": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "公开输入🙂",
+                "text_elements": []
+              },
+              {
+                "type": "localImage",
+                "path": "C:\\never-read.png"
+              }
+            ]
+          },
+          {
+            "type": "agentMessage",
+            "id": "assistant-1",
+            "text": "公开回复",
+            "phase": "final_answer",
+            "memoryCitation": null,
+            "delivery": null,
+            "questions": null
+          },
+          {
+            "type": "reasoning",
+            "id": "reasoning-1",
+            "summary": [
+              "公开摘要"
+            ],
+            "content": [
+              "HIDDEN_CHAIN_SENTINEL"
+            ],
+            "encrypted_content": "HIDDEN_CHAIN_SENTINEL"
+          },
+          {
+            "type": "commandExecution",
+            "id": "command-1",
+            "pluginId": null,
+            "scriptPath": null,
+            "command": "echo DO_NOT_EXECUTE",
+            "cwd": "C:\\fixture",
+            "processId": null,
+            "source": "agent",
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": null,
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          {
+            "type": "fileChange",
+            "id": "file-1",
+            "changes": [
+              {
+                "path": "C:\\never-write.txt",
+                "kind": {
+                  "type": "update",
+                  "move_path": null
+                },
+                "diff": "public diff"
+              }
+            ],
+            "status": "completed"
+          },
+          {
+            "type": "mcpToolCall",
+            "id": "mcp-1",
+            "server": "fixture",
+            "tool": "search",
+            "status": "completed",
+            "arguments": {
+              "query": "public",
+              "raw_reasoning": "HIDDEN_CHAIN_SENTINEL"
+            },
+            "appContext": null,
+            "mcpAppUi": null,
+            "pluginId": null,
+            "readOnlyHint": true,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "public result"
+                },
+                {
+                  "type": "reasoning",
+                  "summary": [
+                    "nested public"
+                  ],
+                  "content": [
+                    "HIDDEN_CHAIN_SENTINEL"
+                  ]
+                }
+              ],
+              "structuredContent": {
+                "value": 1,
+                "encryptedContent": "HIDDEN_CHAIN_SENTINEL"
+              },
+              "_meta": {
+                "secret": "HIDDEN_CHAIN_SENTINEL"
+              }
+            },
+            "error": null,
+            "durationMs": 2
+          },
+          {
+            "type": "dynamicToolCall",
+            "id": "dynamic-1",
+            "namespace": null,
+            "tool": "fixture",
+            "arguments": {
+              "rawReasoning": "HIDDEN_CHAIN_SENTINEL",
+              "x": 1
+            },
+            "status": "completed",
+            "contentItems": [
+              {
+                "type": "inputText",
+                "text": "public dynamic result"
+              }
+            ],
+            "success": true,
+            "durationMs": 1
+          },
+          {
+            "type": "functionCallOutput",
+            "id": "output-1",
+            "name": "fixture",
+            "namespace": null,
+            "output": "public standalone result"
+          }
+        ]
+      }
+    ]
+  }
+}

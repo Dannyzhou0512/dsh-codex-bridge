@@ -1,0 +1,3 @@
+- insert:
+    - id: dsh-codex-bridge-host
+      name: dsh-codex-bridge

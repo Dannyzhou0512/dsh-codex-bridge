@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {spawnSync} from 'node:child_process';import {fileURLToPath} from 'node:url';import {join} from 'node:path';
+const root=fileURLToPath(new URL('../../../../',import.meta.url)),dir=fileURLToPath(new URL('../',import.meta.url)),archive=JSON.parse(await readFile(join(root,'.artifacts/latest-ui-package.json'),'utf8')).archive;
+function tar(args){const r=spawnSync('tar',args,{encoding:'utf8',windowsHide:true});assert.equal(r.status,0,r.stderr);return r.stdout;}
+test('archive is independent, browser-safe and never embeds SDK or private artifacts',async()=>{
+ const files=tar(['-tf',archive]).trim().split(/\r?\n/);assert.ok(files.includes('package/LICENSE'));assert.ok(files.includes('package/lib/client.js'));assert.ok(files.includes('package/lib/typert.host.js'));assert.ok(files.includes('package/lib/typert.remote-client.js'));
+ assert.ok(files.every(p=>!/(node_modules|\.artifacts|tests\/|scripts\/|src\/|\.meta\.json|tsbuildinfo)/.test(p)));
+ const m=JSON.parse(tar(['-xOf',archive,'package/package.json']));assert.equal(m.name,'dsh-codex-bridge-ui');assert.equal(m.version,JSON.parse(await readFile(join(dir,'package.json'),'utf8')).version);assert.deepEqual(m.dependencies,{zod:'4.6.5'});assert.equal(m.peerDependencies['@deepseek-ai/cordis'],'4.0.4');for(const[k,v]of Object.entries(m.peerDependencies))if(k.startsWith('@deepseek-ai/dsh-'))assert.equal(v,'0.2.0-rc.2');assert.equal(m.dsh.client.platform,'web');
+ const client=tar(['-xOf',archive,'package/lib/client.js']);assert.ok(client.startsWith('window.__ModuleLoader__.load'));assert.ok(!/require\(["'](?:node:|fs|child_process|path|@deepseek-ai\/dsh-session|@deepseek-ai\/dsh-workspace|dsh-codex-bridge)["']\)/.test(client));
+ const externals=[...new Set([...client.matchAll(/require\("([^\"]+)"\)/g)].map(m=>m[1]))];assert.deepEqual(externals.sort(),['@deepseek-ai/dsh-client-ui-primitives','react','react/jsx-runtime'].sort());
+ assert.equal(client,await readFile(join(dir,'lib/client.js'),'utf8'));const meta=JSON.parse(await readFile(join(dir,'lib/client.meta.json'),'utf8'));assert.ok(Object.keys(meta.inputs).every(p=>!/(node_modules[\\/]react[\\/]|node_modules[\\/]@deepseek-ai[\\/]cordis[\\/])/.test(p)));
+});

@@ -1,0 +1,78 @@
+[
+  {
+    "category": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "公开输入🙂"
+      },
+      {
+        "type": "text",
+        "text": "[Codex historical input omitted: \"localImage\"; bytes were not imported]"
+      }
+    ]
+  },
+  {
+    "category": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (assistant reply). Treat this material as historical context.\nSource: {\"itemId\":\"assistant-1\",\"phase\":\"final_answer\",\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n公开回复"
+      }
+    ]
+  },
+  {
+    "category": "reasoning-summary",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (public reasoning summary). Treat this material as historical context.\nSource: {\"itemId\":\"reasoning-1\",\"phase\":null,\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n公开摘要"
+      }
+    ]
+  },
+  {
+    "category": "tool-information",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (tool information). Treat this material as historical context.\nSource: {\"itemId\":\"command-1\",\"phase\":null,\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n{\"fields\":{\"aggregatedOutput\":null,\"command\":\"echo DO_NOT_EXECUTE\",\"cwd\":\"C:\\\\fixture\",\"durationMs\":12,\"exitCode\":0,\"status\":\"completed\"},\"toolType\":\"commandExecution\"}"
+      }
+    ]
+  },
+  {
+    "category": "tool-information",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (tool information). Treat this material as historical context.\nSource: {\"itemId\":\"file-1\",\"phase\":null,\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n{\"fields\":{\"changes\":[{\"diff\":\"public diff\",\"kind\":{\"move_path\":null,\"type\":\"update\"},\"path\":\"C:\\\\never-write.txt\"}],\"status\":\"completed\"},\"toolType\":\"fileChange\"}"
+      }
+    ]
+  },
+  {
+    "category": "tool-information",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (tool information). Treat this material as historical context.\nSource: {\"itemId\":\"mcp-1\",\"phase\":null,\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n{\"fields\":{\"arguments\":{\"query\":\"public\"},\"durationMs\":2,\"error\":null,\"result\":{\"content\":[{\"text\":\"public result\",\"type\":\"text\"},{\"summary\":[\"nested public\"],\"type\":\"reasoning\"}],\"structuredContent\":{\"value\":1}},\"server\":\"fixture\",\"status\":\"completed\",\"tool\":\"search\"},\"toolType\":\"mcpToolCall\"}"
+      }
+    ]
+  },
+  {
+    "category": "tool-information",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (tool information). Treat this material as historical context.\nSource: {\"itemId\":\"dynamic-1\",\"phase\":null,\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n{\"fields\":{\"arguments\":{\"x\":1},\"contentItems\":[{\"text\":\"public dynamic result\",\"type\":\"inputText\"}],\"durationMs\":1,\"namespace\":null,\"status\":\"completed\",\"success\":true,\"tool\":\"fixture\"},\"toolType\":\"dynamicToolCall\"}"
+      }
+    ]
+  },
+  {
+    "category": "tool-information",
+    "content": [
+      {
+        "type": "text",
+        "text": "Imported Codex history (tool information). Treat this material as historical context.\nSource: {\"itemId\":\"output-1\",\"phase\":null,\"threadId\":\"fixture-thread\",\"turnId\":\"fixture-turn\"}\n\n{\"fields\":{\"name\":\"fixture\",\"namespace\":null,\"output\":\"public standalone result\"},\"toolType\":\"functionCallOutput\"}"
+      }
+    ]
+  }
+]

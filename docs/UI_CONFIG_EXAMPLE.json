@@ -1,0 +1,31 @@
+{
+  "enabled": true,
+  "writeEnabled": false,
+  "reader": {
+    "executable": "C:/Path/To/codex.exe",
+    "args": [
+      "app-server",
+      "--stdio"
+    ],
+    "cwd": "C:/Path/To/ExistingProject",
+    "codexHome": "C:/Path/To/CodexHome",
+    "clientInfo": {
+      "name": "dsh-codex-bridge",
+      "title": "Codex history import",
+      "version": "0.0.9"
+    },
+    "limits": {
+      "requestTimeoutMs": 30000,
+      "shutdownTimeoutMs": 3000,
+      "maxInFlight": 2,
+      "maxFrameBytes": 16000000
+    },
+    "readLimits": {
+      "pageSize": 50,
+      "maxPages": 20,
+      "maxThreads": 500,
+      "maxItems": 10000,
+      "maxJsonDepth": 64
+    }
+  }
+}

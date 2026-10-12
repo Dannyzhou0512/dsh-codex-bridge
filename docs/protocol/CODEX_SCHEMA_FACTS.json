@@ -1,0 +1,34 @@
+{
+  "binaryVersion": "codex-cli 0.162.0-alpha.2",
+  "protocolSurface": "non-experimental, not a stable binary release",
+  "allowedMethods": [
+    "initialize",
+    "initialized",
+    "thread/list",
+    "thread/read"
+  ],
+  "experimentalApi": false,
+  "excludedMethods": [
+    "thread/turns/list",
+    "thread/items/list",
+    "thread/resume",
+    "thread/start",
+    "turn/start"
+  ],
+  "timestampUnits": {
+    "threadCreatedUpdated": "unix-seconds",
+    "turnStartedCompleted": "unix-seconds",
+    "duration": "milliseconds"
+  },
+  "threadModel": "latest/configured only; not per-turn execution telemetry",
+  "threadPath": "unstable; excluded",
+  "unhydratedCounts": null,
+  "schemaSha256": {
+    "v1/InitializeParams.json": "b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e",
+    "v1/InitializeResponse.json": "62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9",
+    "v2/ThreadListParams.json": "bf5abcb5363c177f8d6b60e6193c76ad8807d6452b67a73ee2f1d77dfe427ac9",
+    "v2/ThreadListResponse.json": "8c56fbe4504de9813753bf0fae07a89a3236a1b7d31a0729800c9c9359b55754",
+    "v2/ThreadReadParams.json": "dfe040c6ac71d30795b8be3f3ff232e66f362a37f883b491e5d1ea367f470db4",
+    "v2/ThreadReadResponse.json": "ba6168f666c09b4e37d2f4f9abe113dfd4b03b9ada141fb8576554d262c00dda"
+  }
+}
