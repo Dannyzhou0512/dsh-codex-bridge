@@ -4,6 +4,16 @@
 
 这是第三方 Harness 插件；仓库同时提供一个可安装的 **Codex 操作 Skill**，两者用途不同。项目目前以预览形式开放，不承诺任意历史无损迁移或所有插件故障均不影响宿主启动。
 
+## V2 更新 · Windows 公开预览
+
+**适用版本**　Windows 上的 DeepSeek Harness `0.2.2-rc.3`。下载主插件 `0.0.10` 和侧栏 UI `0.0.9` 两个安装包。
+
+- 预览顶部新增 **「导入此会话」**，确认目标目录和转换变化后，自动试跑并复核。
+- 开启 **「批量导入」** 后才显示逐项审核的复选框。
+- 在原生会话的 **「对话」** 页查看「来自 Codex 的历史回复」。
+
+[下载安装包与查看更新说明](https://github.com/Dannyzhou0512/dsh-codex-bridge/releases/tag/v0.0.10-preview.1) · [Windows 快速开始](docs/USAGE.md#windows-快速开始)
+
 ## 组件
 
 | 组件 | 版本 | 用途 |
@@ -25,8 +35,6 @@
 历史assistant/tool在接受损失后保存为带来源标记的回忆上下文，不伪造模型身份，不重放工具调用；隐藏推理不迁移。详情见[架构](docs/ARCHITECTURE.md)、[字段映射](docs/API_MAP.md)、[限制](docs/LIMITATIONS.md)。
 
 ## 安装配套 Skill
-
-首次使用可从 [GitHub 预览版](https://github.com/Dannyzhou0512/dsh-codex-bridge/releases/tag/v0.0.10-preview.1) 下载安装包，再按 [Windows 快速开始](docs/USAGE.md#windows-快速开始) 安装并试跑。
 
 将[skills/dsh-codex-bridge](skills/dsh-codex-bridge)目录复制到你自己的Codex skills目录，或用Skill Installer从本仓库安装该路径。示例请求：
 
