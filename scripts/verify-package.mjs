@@ -52,9 +52,9 @@ assert.equal(manifest.bundleDependencies, undefined);
 assert.equal(manifest.bundledDependencies, undefined);
 assert.equal(manifest.dsh.client, undefined); assert.equal(manifest.bin, undefined);
 for (const name of ['./planner', './importer', './recovery', './batch', './cli']) assert.equal(Object.keys(manifest.exports[name])[0], 'types');
-assert.equal(manifest.peerDependencies['@deepseek-ai/cordis'], '4.0.4');
-assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-app-boot'], '0.2.0-rc.2');
-for (const name of ['@deepseek-ai/dsh-session', '@deepseek-ai/dsh-llm', '@deepseek-ai/dsh-session-persistence', '@deepseek-ai/dsh-session-title', '@deepseek-ai/dsh-workspace', '@deepseek-ai/dsh-cmdline']) assert.equal(manifest.peerDependencies[name], '0.2.0-rc.2');
+assert.equal(manifest.peerDependencies['@deepseek-ai/cordis'], '4.1.0');
+assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-app-boot'], '0.2.2-rc.3');
+for (const name of ['@deepseek-ai/dsh-session', '@deepseek-ai/dsh-llm', '@deepseek-ai/dsh-session-persistence', '@deepseek-ai/dsh-session-title', '@deepseek-ai/dsh-workspace', '@deepseek-ai/dsh-cmdline']) assert.equal(manifest.peerDependencies[name], '0.2.2-rc.3');
 const runtimeImports = new Set();
 for (const file of files.filter(name => name.endsWith('.js'))) {
   const emitted = tar(['-xOf', archive, file]);
@@ -91,7 +91,7 @@ try {
   const mock = join(directory, 'node_modules/p3-mock-model');
   await mkdir(mock, { recursive: true });
   await writeFile(join(mock, 'package.json'), JSON.stringify({ name: 'p3-mock-model', version: '0.0.0', type: 'module', main: './index.mjs',
-    peerDependencies: { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/dsh-llm': '0.2.0-rc.2' } }));
+    peerDependencies: { '@deepseek-ai/cordis': '4.1.0', '@deepseek-ai/dsh-llm': '0.2.2-rc.3' } }));
   await cp(join(project, 'tests/fixtures/p3/mock-llm.mjs'), join(mock, 'index.mjs'));
   nativeImport = { write: await runFixture('p7-host-process.mjs', directory, ['write']),
     resume: await runFixture('p7-host-process.mjs', directory, ['resume']),

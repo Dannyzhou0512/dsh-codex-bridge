@@ -4,17 +4,25 @@ import type { ThreadRow, HistoryPreview, ReviewSelection, HistoryReview, History
 import { lossLabels, type LocaleKey } from './locales.js';
 type Label = (key: LocaleKey) => string;
 function time(value: number): string { return new Date(value).toLocaleString(); }
-export function ThreadRows({rows,selected,active,busy,label,onSelect,onPreview}:{rows:readonly ThreadRow[];selected:readonly ReviewSelection[];active:string|null;busy:boolean;label:Label;onSelect:(id:string,checked:boolean)=>void;onPreview:(id:string)=>void}):ReactNode {
-  return <ul className="dsh-codex-rows">{rows.map(row=><li key={row.id} data-active={active===row.id}>
-    <div className="dsh-codex-row-title"><label><input type="checkbox" checked={selected.some(s=>s.threadId===row.id)} disabled={busy || (!selected.some(s=>s.threadId===row.id)&&selected.length>=20)} onChange={e=>onSelect(row.id,e.target.checked)} aria-label={`${label('choose')}: ${row.title??row.id}`}/><strong>{row.title??label('noTitle')}</strong></label>
-    <Button variant="outline" size="sm" disabled={busy} onClick={()=>onPreview(row.id)}>{label('preview')}</Button></div>
+export function ThreadRows({rows,selected,batchMode,active,busy,label,onSelect,onPreview,onImport}:{rows:readonly ThreadRow[];selected:readonly ReviewSelection[];batchMode:boolean;active:string|null;busy:boolean;label:Label;onSelect:(id:string,checked:boolean)=>void;onPreview:(id:string)=>void;onImport:(row:ThreadRow)=>void}):ReactNode {
+  return <ul className="dsh-codex-rows">{rows.map(row=>{
+    const checked=selected.some(selection=>selection.threadId===row.id);
+    const title=<strong>{row.title??label('noTitle')}</strong>;
+    return <li key={row.id} data-active={active===row.id}>
+    <div className="dsh-codex-row-title">{batchMode?<label><input type="checkbox" checked={checked} disabled={busy||(!checked&&selected.length>=20)} onChange={e=>onSelect(row.id,e.target.checked)} aria-label={`${label('choose')}: ${row.title??row.id}`}/>{title}</label>:title}
+    <div className="dsh-codex-row-actions">
+      <Button variant="outline" size="sm" disabled={busy} onClick={()=>onPreview(row.id)}>{label('preview')}</Button>
+      {!batchMode&&<Button variant="outline" size="sm" disabled={busy} onClick={()=>onImport(row)}>{label('importOne')}</Button>}
+    </div></div>
     <div className="dsh-codex-meta">{row.id} · {row.status}</div><p>{row.cwd}</p>
     <div className="dsh-codex-meta">{label('created')}: {time(row.createdAtMs)}<br/>{label('updated')}: {time(row.updatedAtMs)} · {label('unknownCounts')}</div>
-  </li>)}</ul>;
+  </li>;})}</ul>;
 }
-export function ThreadInspector({preview,selected,busy,label,onEdit}:{preview:HistoryPreview|null;selected:ReviewSelection|undefined;busy:boolean;label:Label;onEdit:(changes:Partial<ReviewSelection>)=>void}):ReactNode {
+export function ThreadInspector({preview,selected,busy,label,onEdit,onImport}:{preview:HistoryPreview|null;selected:ReviewSelection|undefined;busy:boolean;label:Label;onEdit:(changes:Partial<ReviewSelection>)=>void;onImport:(()=>void)|undefined}):ReactNode {
   if(!preview)return <aside className="dsh-codex-inspector"><h2>{label('noPreview')}</h2><p>{label('previewHint')}</p></aside>;
-  return <aside className="dsh-codex-inspector"><h2>{label('preview')}</h2><p className="dsh-codex-meta">{preview.threadId}<br/>{label('counts')}: {preview.turns} / {preview.messages} / {preview.tools}</p>
+  return <aside className="dsh-codex-inspector"><div className="dsh-codex-row-title dsh-codex-inspector-heading"><h2>{label('preview')}</h2>
+    {onImport&&<Button size="sm" disabled={busy} onClick={onImport}>{label('importPreview')}</Button>}</div>
+    <p className="dsh-codex-meta">{preview.threadId}<br/>{label('counts')}: {preview.turns} / {preview.messages} / {preview.tools}</p>
     {selected&&<><fieldset disabled={busy}><label htmlFor="codex-remap">{label('remap')}</label><input id="codex-remap" type="text" value={selected.remapCwd??''} onChange={e=>onEdit({remapCwd:e.target.value.trim()?e.target.value:null})}/><p>{label('remapHint')}</p>
       </fieldset><fieldset disabled={busy}><legend>{label('losses')}</legend>{preview.losses.map(loss=><label className="dsh-codex-loss" key={loss}><input type="checkbox" checked={selected.acceptedLosses.includes(loss)} onChange={e=>onEdit({acceptedLosses:e.target.checked?[...selected.acceptedLosses,loss]:selected.acceptedLosses.filter(x=>x!==loss)})}/>{lossLabels[loss]?label(lossLabels[loss]):loss}</label>)}</fieldset></>}
     {preview.truncated&&<p role="status">{label('truncated')}</p>}

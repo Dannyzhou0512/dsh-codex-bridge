@@ -3,15 +3,14 @@
   "reader": {
     "executable": "C:/Path/To/codex.exe",
     "args": [
-      "app-server",
-      "--stdio"
+      "app-server"
     ],
     "cwd": "C:/Path/To/ExistingProject",
     "codexHome": "C:/Path/To/CodexHome",
     "clientInfo": {
       "name": "dsh-codex-bridge",
       "title": "Codex history import",
-      "version": "0.0.9"
+      "version": "0.0.10"
     },
     "limits": {
       "requestTimeoutMs": 30000,

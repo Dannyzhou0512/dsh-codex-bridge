@@ -30,14 +30,14 @@ test('manifest, patch and built ESM keep only the P1 service form and external h
   assert.deepEqual(Object.keys(module), ['default'], 'Do not mix function-plugin named exports with a service default');
 });
 
-test('development lock has one Cordis and only rc.2 DSH packages confined to development', async () => {
+test('development lock has one Cordis and only target-version DSH packages confined to development', async () => {
   const lock = JSON.parse(await readFile(join(project, 'package-lock.json'), 'utf8'));
   const packages = Object.entries(lock.packages);
   const cordis = packages.filter(([path]) => /node_modules\/@deepseek-ai\/cordis$/.test(path));
   assert.equal(cordis.length, 1);
-  assert.equal(cordis[0][1].version, '4.0.4');
+  assert.equal(cordis[0][1].version, '4.1.0');
   for (const [path, data] of packages) {
-    if (/node_modules\/@deepseek-ai\/dsh(?:-[^\/]+)?$/.test(path)) assert.equal(data.version, '0.2.0-rc.2', path);
+    if (/node_modules\/@deepseek-ai\/dsh(?:-[^\/]+)?$/.test(path)) assert.equal(data.version, '0.2.2-rc.3', path);
     if (/node_modules\/@deepseek-ai\/dsh(?:-[^\/]+)?$/.test(path)) assert.equal(data.dev === true || data.devOptional === true, true, 'DSH must remain development-only: ' + path);
   }
 });

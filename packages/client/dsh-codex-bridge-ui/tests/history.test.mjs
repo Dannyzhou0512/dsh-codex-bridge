@@ -6,7 +6,7 @@ const {allocate,cleanup,stagePlugin}=await import(pathToFileURL(join(root,'tests
 const {hostEntries}=await import(pathToFileURL(join(root,'tests/fixtures/p3/host-config.mjs')).href);
 const {cliConfig}=await import(pathToFileURL(join(root,'tests/fixtures/p10-launch.mjs')).href);
 const ui=await import(libFile('index.js')),{TYPERT}=await import(libFile('typert.host.js'));
-import {setup} from './environment.mjs';
+import {invokeBridge,setup} from './environment.mjs';
 test('P12 real SDK Gateway: public preview, batch dry-run zero writes, native sessions, fresh Host dedup and unload',async t=>{
  const e=await setup(t);const{ctx,dir,call}=e;
  assert.equal((await call('status')).importEnabled,true);
@@ -30,10 +30,10 @@ test('P12 real SDK Gateway: public preview, batch dry-run zero writes, native se
  const repeated=await call('review',{selections:['fixture-thread','second-fixture'].map(id=>e.selection(id,preview.losses))});assert.ok(repeated.rows.every(r=>r.state==='already-imported'));
  await replacement.dispose();assert.equal(ctx.get('p3Probe').requests.length,0);
   const restarted=await e.reboot();const restartOwner=await restarted.plugin(ui,{enabled:true,writeEnabled:true,reader:cliConfig(dir).reader});
- const duplicate=await restarted.typertGateway.invoke({namespace:'codexBridgeUi',method:'review',args:{selections:['fixture-thread','second-fixture'].map(id=>e.selection(id,preview.losses))}});assert.ok(duplicate.rows.every(r=>r.state==='already-imported'));
+ const duplicate=await invokeBridge(restarted,{namespace:'codexBridgeUi',method:'review',args:{selections:['fixture-thread','second-fixture'].map(id=>e.selection(id,preview.losses))}});assert.ok(duplicate.rows.every(r=>r.state==='already-imported'));
  for(const row of actual.rows){const native=await restarted.get('sessionQuery').readSession(row.sessionId);assert.equal(native.events.filter(e=>e.type==='codex-bridge/import-receipt').length,1);assert.ok(restarted.get('workspaceRegistry').list().some(w=>w.sessionIds.includes(row.sessionId)));}
  assert.equal(restarted.get('p3Probe').requests.length,0);await restartOwner.dispose();
- const log=(await readFile(join(dir,'rpc.jsonl'),'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);assert.ok(log.filter(r=>r.method).every(r=>['initialize','initialized','thread/list','thread/read'].includes(r.method)));
+ const log=(await readFile(join(dir,'rpc.jsonl'),'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);assert.ok(log.filter(r=>r.method).every(r=>['initialize','initialized','thread/list','thread/read','thread/turns/list','thread/items/list'].includes(r.method)));
 });
 test('P12 defaults deny writes and stale source aborts after a successful dry-run',async t=>{
  const e=await setup(t,false),preview=await e.call('preview',{threadId:'fixture-thread'});
@@ -56,4 +56,46 @@ test('P12 review capabilities expire, evict within bounds and reject invalid sel
  const last=await e.call('review',{selections:[e.selection('fixture-thread',p.losses)]});const original=Date.now;
  try{Date.now=()=>original()+600001;await assert.rejects(e.call('execute',{handle:last.handle,digest:last.digest,dryRun:true}));}finally{Date.now=original;}
  assert.equal((await e.ctx.get('sessionPersistence').list()).length,0);
+});
+
+test('single confirmation binds the shown source, destination and losses and performs its own dry-run',async t=>{
+ const {ctx,dir,call,owner,selection}=await setup(t,false);
+ const review=()=>call('review',{selections:[selection('fixture-thread')]});
+ const confirm=(plan,dryRun)=>call('confirmSingle',{handle:plan.handle,digest:plan.digest,dryRun});
+ const first=await review();
+ assert.equal(first.rows[0].state,'needs-review');
+ assert.equal(first.rows[0].targetCwd,join(dir,'mapped 中文 spaces'));
+ assert.ok(first.rows[0].losses.includes('assistant-role-recall'));
+ const before=ctx.get('workspaceRegistry').list().length;
+ assert.equal((await confirm(first,true)).rows[0].state,'dry-run');
+ await assert.rejects(confirm(first,false));
+ assert.equal(ctx.get('workspaceRegistry').list().length,before);
+ assert.equal((await ctx.get('sessionPersistence').list()).length,0);
+
+ await owner.dispose();
+ const replacement=await ctx.plugin(ui,{enabled:true,writeEnabled:true,reader:cliConfig(dir).reader});
+ t.after(()=>replacement.dispose());
+ const batch=await call('review',{selections:[selection('fixture-thread'),selection('second-fixture')]});
+ await assert.rejects(confirm(batch,false));
+ const shown=await review();
+ await assert.rejects(confirm({...shown,digest:'0'.repeat(64)},false));
+ const fixturePath=join(dir,'history.json');
+ const fixture=JSON.parse(await readFile(fixturePath,'utf8'));
+ fixture.thread.turns[0].items.find(item=>item.type==='agentMessage').text+=' changed after confirmation was displayed';
+ await writeFile(fixturePath,JSON.stringify(fixture));
+ const stale=await confirm(shown,false);
+ assert.equal(stale.rows[0].state,'stale-plan');
+ assert.equal(stale.rows[0].mayHaveCommitted,false);
+ await assert.rejects(confirm(shown,false));
+ assert.equal(ctx.get('workspaceRegistry').list().length,before);
+ assert.equal((await ctx.get('sessionPersistence').list()).length,0);
+
+ const accepted=await review();
+ const result=await confirm(accepted,false);
+ assert.equal(result.rows[0].state,'completed');
+ assert.equal(result.rows[0].verified,true);
+ const session=await ctx.get('sessionQuery').readSession(result.rows[0].sessionId);
+ assert.equal(session.session.cwd,accepted.rows[0].targetCwd);
+ assert.equal((await review()).rows[0].state,'already-imported');
+ assert.equal(ctx.get('p3Probe').requests.length,0);
 });

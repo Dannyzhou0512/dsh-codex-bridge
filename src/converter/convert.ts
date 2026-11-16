@@ -35,7 +35,11 @@ function toolOutputUnavailable(item: Extract<PublicItem, { type: 'toolInformatio
 function build(snapshot: ThreadSnapshot, options: ConversionOptions): ConversionResult {
   const source = projectSnapshot(snapshot, options.limits.maxToolDepth);
   assertBytes(source, options.limits.maxInputBytes);
-  const sourceFingerprint = digest('dsh-codex-bridge/source/v1', source);
+  // The existing receipt hashes used the deprecation marker for every
+  // paginated thread. Preserve that digest without displaying the old warning
+  // when the snapshot was read using the current pagination protocol.
+  const compatibilityWarnings = source.thread.historyMode === 'paginated' ? ['paginated-full-read-deprecated'] : [];
+  const sourceFingerprint = digest('dsh-codex-bridge/source/v1', { ...source, compatibilityWarnings });
   const id = sessionIdFor(source.thread.id);
   const warnings: ConversionWarning[] = [
     { code: 'public-subset-only' }, { code: 'item-times-synthetic' }, { code: 'source-liveness-unproven' },

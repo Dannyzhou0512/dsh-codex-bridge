@@ -70,6 +70,15 @@ test('determinism, stable identities, raw-independent fingerprints and tool key 
   reordered.turns[0].items.find(row => row.type === 'toolInformation' && row.toolType === 'dynamicToolCall').fields.arguments = { a: 1, b: 2, x: 1 };
   assert.equal(convertSnapshot(reversed, options()).sourceFingerprint, convertSnapshot(reordered, options()).sourceFingerprint);
 });
+test('current pagination retains the fingerprint and events recorded by full-read imports', () => {
+  const legacy = publicSnapshot();
+  const paged = { ...legacy, compatibilityWarnings: [] };
+  const original = convertSnapshot(legacy, options());
+  const current = convertSnapshot(paged, options());
+  assert.equal(current.sourceFingerprint, original.sourceFingerprint);
+  assert.deepEqual(current.plan, original.plan);
+  assert(!current.warnings.some(warning => warning.code === 'paginated-full-read-deprecated'));
+});
 test('closed multi-turn statuses, item order and unavailable timing remain explicit', () => {
   const source = userOnly();
   source.turns = [
@@ -175,7 +184,7 @@ test('generated multi-turn plans cold-read and continue through actual rc.2 Host
   await mkdir(mockRoot, { recursive: true });
   await cp(join(project, 'tests/fixtures/p3/mock-llm.mjs'), join(mockRoot, 'index.mjs'));
   await writeFile(join(mockRoot, 'package.json'), JSON.stringify({ name: 'p3-mock-model', version: '0.0.0',
-    type: 'module', main: 'index.mjs', peerDependencies: { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/dsh-llm': '0.2.0-rc.2' } }));
+    type: 'module', main: 'index.mjs', peerDependencies: { '@deepseek-ai/cordis': '4.1.0', '@deepseek-ai/dsh-llm': '0.2.2-rc.3' } }));
   for (const mode of ['write', 'resume', 'verify-after-resume']) {
     const report = await runFixture('p4-host-process.mjs', directory, [mode]);
     assert.equal(report.converterSubpath, true);

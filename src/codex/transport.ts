@@ -111,7 +111,8 @@ export class ReadOnlyStdioClient {
 
   /** Reject arbitrary method names at runtime, even for JavaScript callers. */
   async request(method: HistoryMethod, params: Record<string, unknown>, signal?: AbortSignal): Promise<unknown> {
-    if (method !== 'thread/list' && method !== 'thread/read') throw new CodexReadError('write-method-denied');
+    if (method !== 'thread/list' && method !== 'thread/read' && method !== 'thread/turns/list' && method !== 'thread/items/list')
+      throw new CodexReadError('write-method-denied');
     if (signal?.aborted) throw new CodexReadError('cancelled');
     await this.connect();
     if (signal?.aborted) throw new CodexReadError('cancelled');

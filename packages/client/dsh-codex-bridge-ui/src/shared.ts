@@ -1,8 +1,8 @@
 /** Bounded browser wire values. No Node or Harness core runtime imports. */
 export interface BridgeUiStatus {
   readonly schemaVersion: 1;
-  readonly companionVersion: '0.0.3';
-  readonly harnessVersion: '0.2.0-rc.2';
+  readonly companionVersion: '0.0.9';
+  readonly harnessVersion: '0.2.2-rc.3';
   readonly sourceState: 'not-configured' | 'configured' | 'invalid-config';
   readonly importEnabled: boolean;
   readonly capabilities: readonly { readonly name: string; readonly available: boolean }[];
@@ -22,6 +22,7 @@ export interface HistoryPreview {
 export interface ReviewSelection { readonly threadId: string; readonly remapCwd: string | null; readonly acceptedLosses: readonly string[] }
 export interface ReviewRow {
   readonly threadId: string; readonly sessionId: string; readonly state: string;
+  readonly title: string | null;
   readonly targetCwd: string | null; readonly workspaceAction: string | null;
   readonly losses: readonly string[]; readonly blockers: readonly string[]; readonly warnings: readonly string[];
 }

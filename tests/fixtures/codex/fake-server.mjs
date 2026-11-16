@@ -8,7 +8,7 @@ const log = process.argv[3];
 const fixture = JSON.parse(readFileSync(new URL('./history.json', import.meta.url), 'utf8'));
 const reads = [];
 const line = createInterface({ input: process.stdin });
-let initialized = false, page = 0, approvalSent = false;
+let initialized = false, page = 0, approvalSent = false, metadataReads = 0;
 const record = value => appendFileSync(log, JSON.stringify(value) + '\n');
 record({ envSecretForwarded: Boolean(process.env.P2_FAKE_API_KEY), internalForwarded: Object.keys(process.env).some(key => key.startsWith('CODEX_INTERNAL_')) });
 function send(value) {
@@ -34,7 +34,7 @@ line.on('line', raw => {
   if (message.method === 'initialized') { initialized = true; return; }
   if (!message.method) return;
   assert(initialized, 'History request before initialized');
-  assert(['thread/list', 'thread/read'].includes(message.method), 'Write method reached fake server');
+  assert(['thread/list', 'thread/read', 'thread/turns/list', 'thread/items/list'].includes(message.method), 'Write method reached fake server');
   if (mode === 'timeout' || mode === 'ignore-eof') return;
   if (mode === 'exit') { process.exit(7); return; }
   if (mode === 'partial') { process.stdout.write('{"id":', () => process.exit(0)); return; }
@@ -49,6 +49,14 @@ line.on('line', raw => {
     send({ id: 'server-approval', method: 'item/commandExecution/requestApproval', params: { text: 'HIDDEN_CHAIN_SENTINEL' } });
   }
   if (message.method === 'thread/read') {
+    if (!message.params.includeTurns) {
+      metadataReads++;
+      const { thread } = snapshot(message.params.threadId);
+      delete thread.turns;
+      if (mode === 'paged-drift' && metadataReads > 1) thread.updatedAt++;
+      send({ id: message.id, result: { thread } });
+      return;
+    }
     if (mode === 'reorder') {
       reads.push(message);
       if (reads.length === 2) {
@@ -57,6 +65,28 @@ line.on('line', raw => {
           JSON.stringify({ id: first.id, result: snapshot(first.params.threadId) }) + '\n');
       }
     } else send({ id: message.id, result: snapshot(message.params.threadId) });
+    return;
+  }
+  if (message.method === 'thread/turns/list') {
+    if (!mode.startsWith('paged') || (mode === 'paged-late-method-error' && message.params.cursor)) {
+      send({ id: message.id, error: { code: -32601, message: 'Unknown method' } });
+      return;
+    }
+    assert.equal(message.params.itemsView, 'notLoaded');
+    assert.equal(message.params.sortDirection, 'asc');
+    const { id, status, startedAt, completedAt, durationMs } = fixture.thread.turns[0];
+    send({ id: message.id, result: { data: [{ id, status, startedAt, completedAt, durationMs, items: [], itemsView: 'notLoaded' }],
+      nextCursor: mode === 'paged-late-method-error' ? 'second-turn-page' : null } });
+    return;
+  }
+  if (message.method === 'thread/items/list') {
+    assert.equal(message.params.sortDirection, 'asc');
+    const { id, items } = fixture.thread.turns[0];
+    assert.equal(message.params.turnId, id);
+    const offset = Number(message.params.cursor ?? 0), next = offset + message.params.limit;
+    send({ id: message.id, result: { data: items.slice(offset, next).map(item => ({
+      item, turnId: mode === 'paged-wrong-turn' ? 'incorrect-turn' : id,
+    })), nextCursor: next < items.length ? String(next) : null } });
     return;
   }
   assert.equal(message.params.useStateDbOnly, true);

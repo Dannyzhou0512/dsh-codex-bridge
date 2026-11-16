@@ -1,5 +1,7 @@
 # P2：Codex App Server 只读协议
 
+本文记录旧版 P2 验收。当前读取器以 [公开协议校验记录](protocol/CODEX_SCHEMA_FACTS.json) 中的二进制和分页方法为基线，安装配置见[使用指南](USAGE.md)。
+
 状态：P2 实现与项目侧验证已完成，等待审核；不进入 P3。DSH 目标仍严格为 0.2.0-rc.2。包版本 0.0.2，新模块通过 dsh-codex-bridge/codex 导出；Host 根入口仍是 P1 健康服务，不导入或自动连接 reader。
 
 ## 证据与兼容范围

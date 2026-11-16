@@ -163,7 +163,7 @@ test('P8 real published Host recovers lost response then preserves native tail a
   const root = await allocate(); t.after(() => cleanup(root)); await stagePlugin(root);
   const mock = join(root, 'node_modules/p3-mock-model'); await mkdir(mock, { recursive: true });
   await writeFile(join(mock, 'package.json'), JSON.stringify({ name: 'p3-mock-model', version: '0.0.0', type: 'module', main: './index.mjs',
-    peerDependencies: { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/dsh-llm': '0.2.0-rc.2' } }));
+    peerDependencies: { '@deepseek-ai/cordis': '4.1.0', '@deepseek-ai/dsh-llm': '0.2.2-rc.3' } }));
   await cp(join(project, 'tests/fixtures/p3/mock-llm.mjs'), join(mock, 'index.mjs'));
   const crash = await runFixture('p8-host-process.mjs', root, ['crash']); assert.equal(crash.responseLostAfterVerifiedWrite, true);
   const fixed = await runFixture('p8-host-process.mjs', root, ['recover']);

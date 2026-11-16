@@ -9,8 +9,8 @@ const executable = process.argv[2];
 assert(executable && isAbsolute(executable), 'Provide an absolute Codex executable');
 const options = { cwd: project, encoding: 'utf8', windowsHide: true, maxBuffer: 1024 * 1024 };
 const version = execFileSync(executable, ['--version'], options).trim();
-assert.equal(version, 'codex-cli 0.162.0-alpha.2', 'Different binary: review its public protocol before changing the baseline');
-const root = join(project, '.artifacts/codex-schema/0.162.0-alpha.2');
+assert.equal(version, 'codex-cli 0.169.0-alpha.11.1', 'Different binary: review its public protocol before changing the baseline');
+const root = join(project, '.artifacts/codex-schema/0.169.0-alpha.11.1');
 for (const [command, folder] of [['generate-json-schema', 'json'], ['generate-ts', 'ts']]) {
   await mkdir(join(root, folder), { recursive: true });
   execFileSync(executable, ['app-server', command, '--out', join(root, folder)], options);

@@ -7,6 +7,7 @@ interface HistoryBackend {
   preview(threadId: string): Promise<HistoryPreview>;
   review(selections: readonly ReviewSelection[]): Promise<HistoryReview>;
   execute(handle: string, digest: string, dryRun: boolean): Promise<HistoryOutcome>;
+  confirmSingle(handle: string, digest: string, dryRun: boolean): Promise<HistoryOutcome>;
   close(): Promise<void>;
 }
 import type { BridgeUiStatus, HistoryList, HistoryPreview, HistoryReview, HistoryOutcome, ReviewSelection } from './shared.js';
@@ -41,7 +42,7 @@ export class CodexBridgeUi {
   @Remote
   status(): BridgeUiStatus {
     const capabilities = ['sessions','sessionPersistence','workspaceRegistry'].map(name => ({ name, available: this.ctx.get(name) !== undefined }));
-    return { schemaVersion: 1, companionVersion: '0.0.3', harnessVersion: '0.2.0-rc.2',
+    return { schemaVersion: 1, companionVersion: '0.0.9', harnessVersion: '0.2.2-rc.3',
       sourceState: this.settings.invalid ? 'invalid-config' : this.settings.config ? 'configured' : 'not-configured',
       importEnabled: Boolean(this.runtimeContext && this.settings.config?.writeEnabled && capabilities.every(row => row.available)), capabilities };
   }
@@ -53,6 +54,8 @@ export class CodexBridgeUi {
   review(selections: readonly ReviewSelection[]): Promise<HistoryReview> { return this.getRuntime().then(runtime => runtime.review(selections)); }
   @Remote
   execute(handle: string, digest: string, dryRun: boolean): Promise<HistoryOutcome> { return this.getRuntime().then(runtime => runtime.execute(handle, digest, dryRun)); }
+  @Remote
+  confirmSingle(handle: string, digest: string, dryRun: boolean): Promise<HistoryOutcome> { return this.getRuntime().then(runtime => runtime.confirmSingle(handle, digest, dryRun)); }
   private async releaseCapabilities(context: Context): Promise<void> {
     if (this.runtimeContext !== context) return;
     this.runtimeContext = null;

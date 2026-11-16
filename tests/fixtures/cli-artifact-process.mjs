@@ -16,7 +16,7 @@ assert.equal(applied.code, 0, applied.stderr + applied.stdout); assert.equal(app
 const fresh = await run(root, ['plan', ...args]), repeat = await run(root, ['apply', ...args, '--execute', '--reviewed-digest', fresh.json.reviewDigest]);
 assert.equal(repeat.code, 0, repeat.stderr); assert.equal(repeat.json.result.summary.alreadyImported, 2);
 const messages = (await rpcLog(root)).filter(message => message.method);
-assert(messages.every(message => ['initialize', 'initialized', 'thread/list', 'thread/read'].includes(message.method)));
+assert(messages.every(message => ['initialize', 'initialized', 'thread/list', 'thread/read', 'thread/turns/list', 'thread/items/list'].includes(message.method)));
 assert.doesNotMatch(applied.stdout, /HIDDEN_CHAIN_SENTINEL|PRIVATE_ROLLOUT_PATH_SENTINEL/);
 console.log('P1_REPORT ' + JSON.stringify({ phase: 'P10', actualPublishedLauncher: true, externalBundle: true,
   help: true, listPreviewPlan: true, strictDryRun: true, nativeSessionsImported: 2, restartDedup: true, sourceMethodsReadOnly: true }));

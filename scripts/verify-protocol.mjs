@@ -6,11 +6,13 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
 const project = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const root = join(project, '.artifacts/codex-schema/0.162.0-alpha.2/json');
+const root = join(project, '.artifacts/codex-schema/0.169.0-alpha.11.1/json');
 const fixture = JSON.parse(await readFile(join(project, 'tests/fixtures/codex/history.json'), 'utf8'));
+fixture.thread.projectId ??= null;
 const files = ['v1/InitializeParams.json', 'v1/InitializeResponse.json',
   'v2/ThreadListParams.json', 'v2/ThreadListResponse.json',
-  'v2/ThreadReadParams.json', 'v2/ThreadReadResponse.json'];
+  'v2/ThreadReadParams.json', 'v2/ThreadReadResponse.json',
+  'v2/ThreadTurnsListParams.json', 'v2/ThreadTurnsListResponse.json', 'v2/ThreadItemsListParams.json', 'v2/ThreadItemsListResponse.json'];
 const schemas = {}, hashes = {};
 for (const file of files) {
   const bytes = await readFile(join(root, file));
@@ -27,6 +29,10 @@ const checks = [
   ['v2/ThreadListResponse.json', { data: [{ ...fixture.thread, turns: [] }], nextCursor: null }],
   ['v2/ThreadReadParams.json', { threadId: 'fixture-thread', includeTurns: true }],
   ['v2/ThreadReadResponse.json', fixture],
+  ['v2/ThreadTurnsListParams.json', { threadId: 'fixture-thread', itemsView: 'notLoaded', sortDirection: 'asc', limit: 2 }],
+  ['v2/ThreadTurnsListResponse.json', { data: fixture.thread.turns.map(turn => ({ ...turn, items: [], itemsView: 'notLoaded' })), nextCursor: null }],
+  ['v2/ThreadItemsListParams.json', { threadId: 'fixture-thread', turnId: fixture.thread.turns[0].id, sortDirection: 'asc', limit: 2 }],
+  ['v2/ThreadItemsListResponse.json', { data: [{ turnId: fixture.thread.turns[0].id, item: fixture.thread.turns[0].items[0] }], nextCursor: null }],
 ];
 for (const [file, sample] of checks) {
   const valid = ajv.compile(schemas[file]);
@@ -45,9 +51,9 @@ assert.match(thread.properties.createdAt.description, /seconds/);
 assert.match(turn.properties.startedAt.description, /seconds/);
 assert.match(turn.properties.durationMs.description, /milliseconds/);
 const facts = {
-  binaryVersion: 'codex-cli 0.162.0-alpha.2', protocolSurface: 'non-experimental, not a stable binary release',
-  allowedMethods: ['initialize', 'initialized', 'thread/list', 'thread/read'],
-  experimentalApi: false, excludedMethods: ['thread/turns/list', 'thread/items/list', 'thread/resume', 'thread/start', 'turn/start'],
+  binaryVersion: 'codex-cli 0.169.0-alpha.11.1', protocolSurface: 'non-experimental, not a stable binary release',
+  allowedMethods: ['initialize', 'initialized', 'thread/list', 'thread/read', 'thread/turns/list', 'thread/items/list'],
+  experimentalApi: false, excludedMethods: ['thread/items/read', 'thread/resume', 'thread/start', 'turn/start'],
   timestampUnits: { threadCreatedUpdated: 'unix-seconds', turnStartedCompleted: 'unix-seconds', duration: 'milliseconds' },
   threadModel: 'latest/configured only; not per-turn execution telemetry',
   threadPath: 'unstable; excluded', unhydratedCounts: null, schemaSha256: hashes,

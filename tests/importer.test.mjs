@@ -162,7 +162,7 @@ async function stageP7(t) {
   const root = await allocate(); t.after(() => cleanup(root)); await stagePlugin(root);
   const mock = join(root, 'node_modules/p3-mock-model'); await mkdir(mock, { recursive: true });
   await writeFile(join(mock, 'package.json'), JSON.stringify({ name: 'p3-mock-model', version: '0.0.0', type: 'module', main: './index.mjs',
-    peerDependencies: { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/dsh-llm': '0.2.0-rc.2' } }));
+    peerDependencies: { '@deepseek-ai/cordis': '4.1.0', '@deepseek-ai/dsh-llm': '0.2.2-rc.3' } }));
   await cp(join(project, 'tests/fixtures/p3/mock-llm.mjs'), join(mock, 'index.mjs')); return root;
 }
 test('P7 real Host importer persists/attaches/cache-checkpoints then survives unload and two process restarts', { timeout: 180000 }, async t => {

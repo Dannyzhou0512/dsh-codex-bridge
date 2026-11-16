@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 test('P10 actual dsh launcher passes app help/version and rejects grammar before Codex startup', { timeout: 120000 }, async t => {
   const { root } = await setup(t);
   const help = await run(root, ['--help']); assert.equal(help.code, 0, help.stderr); assert.match(help.stdout, /list[\s\S]*preview[\s\S]*plan[\s\S]*apply/);
-  const version = await run(root, ['--bridge-version']); assert.equal(version.code, 0, version.stderr); assert.match(version.stdout, /0\.0\.9/);
+  const version = await run(root, ['--bridge-version']); assert.equal(version.code, 0, version.stderr); assert.match(version.stdout, /0\.0\.10/);
   const missing = await run(root, ['apply', '--execute']); assert.equal(missing.code, 1); assert.match(missing.stderr, /thread/);
   assert.deepEqual(await rpcLog(root), []);
 });
@@ -18,7 +18,7 @@ test('P10 actual dsh profile scans stable public history and previews hydrated c
   const preview = await run(root, ['preview', ...selectedArgs(root)]); assert.equal(preview.code, 0, preview.stderr);
   assert.equal(preview.json.entries.length, 2); assert(preview.json.entries[0].preview.length > 0);
   assert.doesNotMatch(preview.stdout, /HIDDEN_CHAIN_SENTINEL|PRIVATE_ROLLOUT_PATH_SENTINEL/);
-  const log = await rpcLog(root); assert(log.filter(m => m.method).every(m => ['initialize', 'initialized', 'thread/list', 'thread/read'].includes(m.method)));
+  const log = await rpcLog(root); assert(log.filter(m => m.method).every(m => ['initialize', 'initialized', 'thread/list', 'thread/read', 'thread/turns/list', 'thread/items/list'].includes(m.method)));
   assert(log.some(m => m.method === 'thread/list' && m.params.useStateDbOnly));
 });
 
@@ -50,7 +50,7 @@ test('P10 explicit loss refusal, malformed execute and launcher flag coexistence
   const dump = await run(root, [], ['--profile', 'bridge', '--dump-config']);
   assert.equal(dump.code, 0, dump.stderr); assert.match(dump.stdout, /codex-bridge|bridge-cli/);
   const launcherVersion = await run(root, [], ['--version']); assert.equal(launcherVersion.code, 0);
-  assert.match(launcherVersion.stdout, /0\.2\.0-rc\.2/);
+  assert.match(launcherVersion.stdout, /0\.2\.2-rc\.3/);
 });
 test('P10 disabled app face and startup failure do not parse/migrate or spawn the source', { timeout: 120000 }, async t => {
   const { root } = await setup(t, root => ({ ...cliConfig(root), enabled: false }));
@@ -89,7 +89,7 @@ test('P10 CLI-created native Session continues under a fresh Host without bridge
   const { project, runFixture } = await import('./helpers.mjs');
   const mock = join(root, 'node_modules/p3-mock-model'); await mkdir(mock, { recursive: true });
   await writeFile(join(mock, 'package.json'), JSON.stringify({ name: 'p3-mock-model', version: '0.0.0', type: 'module', main: './index.mjs',
-    peerDependencies: { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/dsh-llm': '0.2.0-rc.2' } }));
+    peerDependencies: { '@deepseek-ai/cordis': '4.1.0', '@deepseek-ai/dsh-llm': '0.2.2-rc.3' } }));
   await cp(join(project, 'tests/fixtures/p3/mock-llm.mjs'), join(mock, 'index.mjs'));
   const report = await runFixture('p10-native-process.mjs', root);
   assert.equal(report.cliProducedNativeSession, true); assert.equal(report.nativeTurn2, true);

@@ -11,8 +11,8 @@ export const launcher = join(dirname(require.resolve('@deepseek-ai/dsh/package.j
 export function cliConfig(root, executable = process.execPath) {
   const { target, acceptedLosses, ...conversion } = options(join(root, '目标 中文 spaces'));
   return { enabled: true, reader: { executable, args: [join(root, 'fake-server.mjs'), 'normal', join(root, 'rpc.jsonl')],
-    cwd: root, codexHome: join(root, 'codex-home'), clientInfo: { name: 'p10-synthetic', title: 'Synthetic history', version: '0.0.9' },
-    limits: { requestTimeoutMs: 2000, shutdownTimeoutMs: 1000, maxInFlight: 2, maxFrameBytes: 1000000 },
+    cwd: root, codexHome: join(root, 'codex-home'), clientInfo: { name: 'p10-synthetic', title: 'Synthetic history', version: '0.0.10' },
+    limits: { requestTimeoutMs: 10000, shutdownTimeoutMs: 1000, maxInFlight: 2, maxFrameBytes: 1000000 },
     readLimits: { pageSize: 30, maxPages: 5, maxThreads: 50, maxItems: 1000, maxJsonDepth: 32 } },
     scan: { sourceKinds: ['vscode'], archived: false }, conversion,
     mapping: { maxPathBytes: 8192, maxPlanBytes: 65536, maxWorkspaces: 100 },
@@ -25,7 +25,7 @@ export async function createProfile(root, config = cliConfig(root), profileName 
   const directory = join(root, 'profiles', profileName), bundle = join(directory, 'node_modules/p10-synthetic-profile');
   await mkdir(bundle, { recursive: true }); await mkdir(join(root, '目标 中文 spaces'), { recursive: true });
   await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'p10-test-profile', private: true,
-    dependencies: { 'dsh-codex-bridge': '0.0.9' }, dsh: { profile: { bundles: ['p10-synthetic-profile', 'dsh-codex-bridge'] } } }));
+    dependencies: { 'dsh-codex-bridge': '0.0.10' }, dsh: { profile: { bundles: ['p10-synthetic-profile', 'dsh-codex-bridge'] } } }));
   await writeFile(join(directory, 'cordis.patch.yml'), '[]\n');
   const rows = [
     { id: 'session', name: '@deepseek-ai/dsh-session' },

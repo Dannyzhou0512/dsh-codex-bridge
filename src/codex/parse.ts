@@ -16,14 +16,14 @@ const statusSchema = z.discriminatedUnion('type', [
 const metadataSchema = z.object({
   id: identifier, name: optionalText, preview: z.string(), cwd: identifier,
   createdAt: seconds, updatedAt: seconds, status: statusSchema, ephemeral: z.boolean(),
-  historyMode: z.enum(['legacy', 'paginated']), modelProvider: identifier,
+  historyMode: z.enum(['legacy', 'paginated']).default('legacy'), modelProvider: identifier,
   model: optionalText, cliVersion: z.string(), originator: optionalText,
   source: z.union([z.string(), z.record(z.string(), z.unknown())]),
 });
 const headerSchema = z.object({ id: identifier, type: identifier });
-const turnSchema = z.object({
+export const turnSchema = z.object({
   id: identifier, status: z.enum(['completed', 'interrupted', 'failed', 'inProgress']),
-  itemsView: z.enum(['full', 'summary', 'notLoaded']), items: z.array(z.unknown()),
+  itemsView: z.enum(['full', 'summary', 'notLoaded']).default('full'), items: z.array(z.unknown()),
   startedAt: optionalSeconds, completedAt: optionalSeconds, durationMs: optionalInteger,
   error: z.unknown().optional(),
 });
@@ -77,8 +77,17 @@ function metadata(value: unknown, archived: boolean | null): ThreadMetadata {
 }
 /** Decode metadata; the unhydrated turns array is deliberately never interpreted as a count. */
 export function parseThreadPage(value: unknown, archived: boolean): ThreadPage {
-  const page = decode(z.object({ data: z.array(z.unknown()), nextCursor: z.string().nullable() }), value);
-  return { data: page.data.map(row => metadata(row, archived)), nextCursor: page.nextCursor };
+  const page = parseHistoryPage(value);
+  return { data: page.data.map(row => metadata(row, archived)), nextCursor: page.nextCursor ?? null };
+}
+export function parseHistoryPage(value: unknown) {
+  return decode(z.object({ data: z.array(z.unknown()), nextCursor: identifier.nullish() }), value);
+}
+export function parseReadMetadata(value: unknown, threadId: string): ThreadMetadata {
+  const envelope = decode(z.object({ thread: z.unknown() }), value);
+  const thread = metadata(envelope.thread, null);
+  if (thread.id !== threadId) throw new CodexReadError('identity-mismatch');
+  return thread;
 }
 function input(value: unknown): PublicInput {
   const item = decode(z.object({ type: identifier }), value);
@@ -156,14 +165,14 @@ export function projectPublicItem(value: unknown, limits: ParseLimits): PublicIt
   return { type: 'toolInformation', id: header.id, toolType: header.type, fields: publicFields(fields, limits) };
 }
 /** Decode a hydrated public snapshot; never reconstruct or claim the original model-request state. */
-export function parseThreadSnapshot(value: unknown, threadId: string, limits: ParseLimits): ThreadSnapshot {
+export function parseThreadSnapshot(value: unknown, threadId: string, limits: ParseLimits, pagedTurns?: readonly unknown[]): ThreadSnapshot {
   const envelope = decode(z.object({ thread: z.unknown() }), value);
-  const thread = metadata(envelope.thread, null);
-  if (thread.id !== threadId) throw new CodexReadError('identity-mismatch');
-  const body = decode(z.object({ turns: z.array(turnSchema) }), envelope.thread);
-  if (body.turns.reduce((count, turn) => count + turn.items.length, 0) > limits.maxItems) throw new CodexReadError('content-limit');
+  const thread = parseReadMetadata(value, threadId);
+  const turnsInput = decode(z.array(turnSchema), pagedTurns ?? decode(z.object({ turns: z.unknown() }), envelope.thread).turns);
+  if (turnsInput.length > limits.maxItems || turnsInput.reduce((count, turn) => count + turn.items.length, 0) > limits.maxItems)
+    throw new CodexReadError('content-limit');
   const turnIds = new Set<string>();
-  const turns: PublicTurn[] = body.turns.map(turn => {
+  const turns: PublicTurn[] = turnsInput.map(turn => {
     if (turnIds.has(turn.id)) throw new CodexReadError('invalid-response');
     turnIds.add(turn.id);
     const itemIds = new Set<string>();
@@ -185,7 +194,7 @@ export function parseThreadSnapshot(value: unknown, threadId: string, limits: Pa
   const nonTextInputTypes = all.flatMap(item => item.type !== 'userMessage' ? [] :
     item.content.flatMap(input => input.type === 'text' ? [] : [input.type === 'unsupported' || input.type === 'reference' ? input.inputType : input.type]));
   return { thread, turns, history: historyIssues.length === 0 ? 'full' : 'unsupported', historyIssues,
-    compatibilityWarnings: thread.historyMode === 'paginated' ? ['paginated-full-read-deprecated'] : [],
+    compatibilityWarnings: pagedTurns === undefined && thread.historyMode === 'paginated' ? ['paginated-full-read-deprecated'] : [],
     unsupportedTypes: [...new Set(all.flatMap(item => item.type === 'unsupported' ? [item.originalType] : []))],
     nonTextInputTypes: [...new Set(nonTextInputTypes)], perTurnModelAttribution: false,
     hasInProgressTurn: turns.some(turn => turn.status === 'inProgress'),

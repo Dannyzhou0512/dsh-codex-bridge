@@ -18,7 +18,7 @@ async function setup(t, mode = 'normal', changes = {}) {
   const options = {
     executable: process.execPath, args: [join(project, 'tests/fixtures/codex/fake-server.mjs'), mode, join(directory, 'requests.jsonl')],
     cwd: project, codexHome: directory, clientInfo: { name: 'fixture', title: 'fixture', version: '0.0.2' },
-    limits: { requestTimeoutMs: 2500, shutdownTimeoutMs: 500, maxInFlight: 4, maxFrameBytes: 65536, ...changes.limits },
+    limits: { requestTimeoutMs: 10000, shutdownTimeoutMs: 500, maxInFlight: 4, maxFrameBytes: 65536, ...changes.limits },
     readLimits: { pageSize: 1, maxPages: 5, maxThreads: 10, maxItems: 100, maxJsonDepth: 32, ...changes.readLimits },
   };
   client = changes.transport ? new ReadOnlyStdioClient(options) : new CodexHistoryReader(options);
@@ -92,10 +92,28 @@ test('lazy stdio handshake, pages, archive filter and UTF-8 fragmentation stay r
   assert.equal(client.inspect().exit.forced, false);
   const wire = await requests();
   assert.deepEqual(wire.filter(row => row.method).map(row => row.method),
-    ['initialize', 'initialized', 'thread/list', 'thread/list', 'thread/list', 'thread/read']);
+    ['initialize', 'initialized', 'thread/list', 'thread/list', 'thread/list', 'thread/read', 'thread/turns/list', 'thread/read']);
   assert.equal(wire[0].envSecretForwarded, false);
   assert.equal(wire[0].internalForwarded, false);
 });
+test('current Codex reads full item pages in order with the same public history as full read', async t => {
+  const { client, requests } = await setup(t, 'paged', { readLimits: { pageSize: 2 } });
+  const snapshot = await client.read('fixture-thread');
+  const oldSnapshot = parseThreadSnapshot(synthetic, 'fixture-thread', limits);
+  assert.deepEqual(snapshot, { ...oldSnapshot, compatibilityWarnings: [] });
+  const wire = await requests();
+  assert(wire.filter(row => row.method === 'thread/items/list').length > 1);
+  assert(wire.filter(row => row.method === 'thread/read').every(row => row.params.includeTurns === false));
+});
+
+for (const [mode, expected] of [['paged-drift', 'source-changed'], ['paged-wrong-turn', 'identity-mismatch'],
+  ['paged-late-method-error', 'invalid-response']]) {
+  test('pagination refuses ' + mode + ' without full-read fallback', async t => {
+    const { client, requests } = await setup(t, mode, { readLimits: { pageSize: 2 } });
+    await assert.rejects(client.read('fixture-thread'), code(expected));
+    assert((await requests()).filter(row => row.method === 'thread/read').every(row => row.params.includeTurns === false));
+  });
+}
 test('response IDs correlate out of order; max in-flight rejects excess without breaking admitted reads', { timeout: 120000 }, async t => {
   const { client } = await setup(t, 'reorder', { limits: { maxInFlight: 2 } });
   await client.connect();
@@ -110,7 +128,7 @@ for (const [mode, expected, changes] of [
   ['many', 'scan-limit', { readLimits: { maxThreads: 1 } }],
   ['invalid-utf8', 'invalid-frame', {}], ['invalid', 'invalid-frame', {}], ['oversize', 'frame-too-large', { limits: { maxFrameBytes: 1024 } }],
   ['unknown-id', 'unexpected-response', {}], ['partial', 'truncated-frame', {}],
-  ['exit', 'process-exited', {}], ['rpc-error', 'rpc-failed', {}], ['timeout', 'request-timeout', {}],
+  ['exit', 'process-exited', {}], ['rpc-error', 'rpc-failed', {}], ['timeout', 'request-timeout', { limits: { requestTimeoutMs: 2500 } }],
 ]) {
   test('read-only process handles ' + mode + ' and waits for cleanup', { timeout: 120000 }, async t => {
     const { client } = await setup(t, mode, changes);

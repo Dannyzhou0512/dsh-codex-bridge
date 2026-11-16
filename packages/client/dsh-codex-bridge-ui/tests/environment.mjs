@@ -6,14 +6,24 @@ const {allocate,cleanup,stagePlugin}=await import(pathToFileURL(join(root,'tests
 const {hostEntries}=await import(pathToFileURL(join(root,'tests/fixtures/p3/host-config.mjs')).href);
 const {cliConfig}=await import(pathToFileURL(join(root,'tests/fixtures/p10-launch.mjs')).href);
 const ui=await import(libFile('index.js')),{TYPERT}=await import(libFile('typert.host.js'));
+export function ownerPeer(ctx){
+ const lifecycle=new AbortController();
+ ctx.effect(()=>()=>lifecycle.abort(),'synthetic-peer');
+ return {id:'bridge-test-peer',ctx,principal:{kind:'owner'},signal:lifecycle.signal,interactions:'none',
+  dispose:async()=>lifecycle.abort()};
+}
+export function invokeBridge(ctx,request){
+ return ctx.typertGateway.invoke({peer:ownerPeer(ctx),...request});
+}
 export async function setup(t,writeEnabled=true){
  const dir=await allocate();let cleanupCtx; t.after(async()=>{await cleanupCtx?.get('codexBridgeUi')?.close();await cleanupCtx?.fiber.dispose();await cleanup(dir);});await stagePlugin(dir);
  await mkdir(join(dir,'workspace'),{recursive:true});await mkdir(join(dir,'mapped 中文 spaces'),{recursive:true});
  const mock=join(dir,'node_modules/p3-mock-model');await mkdir(mock,{recursive:true});await cp(join(root,'tests/fixtures/p3/mock-llm.mjs'),join(mock,'index.mjs'));await writeFile(join(mock,'package.json'),JSON.stringify({name:'p3-mock-model',version:'0.0.0',type:'module',main:'index.mjs'}));
   let fake=await readFile(join(root,'tests/fixtures/codex/fake-server.mjs'),'utf8');fake=fake.replace('const fixture =','let fixture =').replace("if (message.method === 'thread/read') {", "if (message.method === 'thread/read') { fixture = JSON.parse(readFileSync(new URL('./history.json', import.meta.url), 'utf8')); ");await writeFile(join(dir,'fake-server.mjs'),fake);await cp(join(root,'tests/fixtures/codex/history.json'),join(dir,'history.json'));
- const rows=hostEntries(dir,false);rows.push({id:'gateway',name:'@deepseek-ai/dsh-api-gateway'});await writeFile(join(dir,'cordis-p12.json'),JSON.stringify(rows));
+ const rows=hostEntries(dir,false);await writeFile(join(dir,'cordis-p12.json'),JSON.stringify(rows));
  const ctx=await boot('p12-synthetic',join(dir,'cordis-p12.json'));cleanupCtx=ctx;ctx.typert.register(TYPERT);
  const owner=await ctx.plugin(ui,{enabled:true,writeEnabled,reader:cliConfig(dir).reader});
- const call=(method,args={})=>ctx.typertGateway.invoke({namespace:'codexBridgeUi',method,args});
+ const peer=ownerPeer(ctx);
+ const call=(method,args={})=>ctx.typertGateway.invoke({namespace:'codexBridgeUi',method,args,peer});
  return{ctx,dir,owner,call,reboot:async()=>{await cleanupCtx.fiber.dispose();cleanupCtx=await boot('p12-restart',join(dir,'cordis-p12.json'));cleanupCtx.typert.register(TYPERT);return cleanupCtx;},selection:(id,losses=[])=>({threadId:id,remapCwd:join(dir,'mapped 中文 spaces'),acceptedLosses:losses})};
 }

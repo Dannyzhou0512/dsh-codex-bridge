@@ -1,6 +1,6 @@
 # dsh-codex-bridge
 
-将 Codex 公开历史迁移为 **DeepSeek Harness 原生可续聊 Session**，并关联现存 Workspace。仅支持 **DeepSeek Harness 0.2.0-rc.2**，不兼容0.1.x或其他未验证版本。MIT开源。
+将 Codex 公开历史迁移为 **DeepSeek Harness 原生可续聊 Session**，并关联现存 Workspace。当前构建目标是 **DeepSeek Harness 0.2.2-rc.3**。MIT 开源。
 
 这是第三方 Harness 插件；仓库同时提供一个可安装的 **Codex 操作 Skill**，两者用途不同。项目目前以预览形式开放，不承诺任意历史无损迁移或所有插件故障均不影响宿主启动。
 
@@ -8,15 +8,15 @@
 
 | 组件 | 版本 | 用途 |
 | --- | --- | --- |
-| dsh-codex-bridge | 0.0.9 | public reader/converter/planner/importer/recovery/batch 与独立profile CLI |
-| dsh-codex-bridge-ui | 0.0.3 preview | 可选侧栏“Codex历史”：浏览、预览、审核、dry-run、显式导入 |
+| dsh-codex-bridge | 0.0.10 | 只读 App Server、转换、审核、原生导入和专用 profile CLI |
+| dsh-codex-bridge-ui | 0.0.9 preview | 可选侧栏“Codex历史”：浏览、预览、审核、dry-run、显式导入 |
 | skills/dsh-codex-bridge | 操作指南 | 指导 Codex 使用已有插件和受信任profile，不包含迁移运行时 |
 
 根Host入口只报告能力，普通启动不连接Codex或迁移历史。CLI仅在专门配置的profile显式启用；UI必须配置可信App Server，writeEnabled默认false。
 
 ## 已实现
 
-- App Server非实验thread/list与thread/read；元数据、完整有界预览、公开消息/工具信息/可用reasoning summary。
+- App Server 非实验历史接口。扫描用 `thread/list`，预览用 `thread/read` 和分页接口 `thread/turns/list`、`thread/items/list`。对明确缺少分页方法的旧服务，尝试读取完整历史。
 - 单条和显式选择的串行批量导入；严格dry-run、审核digest、逐项损失确认。
 - 确定性Session ID、冲突阻断、来源新鲜度复核；重复导入保留已有DSH续聊。
 - cwd存在时注册或复用Workspace；缺失时要求显式映射到已有目录，不自动mkdir。
@@ -26,11 +26,13 @@
 
 ## 安装配套 Skill
 
+首次使用可从 [GitHub 预览版](https://github.com/Dannyzhou0512/dsh-codex-bridge/releases/tag/v0.0.10-preview.1) 下载安装包，再按 [Windows 快速开始](docs/USAGE.md#windows-快速开始) 安装并试跑。
+
 将[skills/dsh-codex-bridge](skills/dsh-codex-bridge)目录复制到你自己的Codex skills目录，或用Skill Installer从本仓库安装该路径。示例请求：
 
-> 使用 $dsh-codex-bridge，预览我选定的Codex历史，只做dry-run，暂不实际导入。
+> 使用 $dsh-codex-bridge 检查版本兼容性，匹配后预览我选定的 Codex 历史并做 Dry-run。
 
-Skill不会自动安装Harness插件、切换生产profile或发送模型消息。需要先按[使用指南](docs/USAGE.md)准备插件与专用profile。
+Skill 会核对目标 DSH、对应 profile 已装插件和配置的 Codex 版本，并报告版本不匹配或未验证的组合。实际迁移由已适配的插件执行。按[使用指南](docs/USAGE.md)准备插件与专用 profile，版本检查流程见[配套 Skill 指南](skills/dsh-codex-bridge/references/workflow.md#compatibility-before-history-access)。
 
 ## 从源码构建与测试
 
@@ -54,9 +56,9 @@ npm test
 
 ## 验证状态和剩余限制
 
-核心162项、UI12项以及实际解包回归通过；已验证真实单条导入、原生真实模型续聊和重启/去重。公开仓库只保留合成夹具和脱敏结论，真实会话、截图、配置及本机验收目录不上传。
+当前组合使用 Codex CLI 0.169.0-alpha.11.1 和 DSH 0.2.2-rc.3。在隔离 profile 实测安装、预览、Dry-run、导入、Workspace 关联、重启去重和合成模型原生续聊。公开仓库只保留合成夹具和脱敏结论。
 
-UI0.0.3已加固断线恢复、服务热替换和写入丢响应处理，仍是预览候选；新版本完整Desktop发布验收未完成。既有renderer崩溃根因未确认。rc.2整个Client factory抛错可阻塞Core前端初始化；公开禁用可恢复，但不能称为任意异常安全。正式真实批量尚未验收。详见[限制与恢复](docs/LIMITATIONS.md)、[开源前验证](docs/OPEN_SOURCE_VALIDATION.md)与[发布前检查](docs/RELEASE_CHECKLIST.md)。
+侧栏包继续按预览提供。旧版真实单条验收见[开源前验证](docs/OPEN_SOURCE_VALIDATION.md)。已知启动和持久化边界见[限制与恢复](docs/LIMITATIONS.md)及[发布前检查](docs/RELEASE_CHECKLIST.md)。
 
 ## 贡献与许可
 

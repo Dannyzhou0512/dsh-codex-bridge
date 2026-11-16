@@ -1,5 +1,7 @@
 # P10：专用 profile CLI（0.0.9）
 
+本文记录旧版 CLI 验收。当前 0.0.10 的 DSH 版本与 profile 安装步骤见[使用指南](USAGE.md)。
+
 已交付显式 opt-in dsh-codex-bridge/cli 应用入口。正常 bundle patch 仍只插入 P1 Host 健康服务，不自动挂 CLI、不解析 Desktop/TUI/Web 参数、不启动 Codex。没有插件 bin、SDK argv 逃逸或宿主源码修改；所有 Node app 启动由既有 dsh profile launcher 拥有。
 
 ## 启动、退出与结构

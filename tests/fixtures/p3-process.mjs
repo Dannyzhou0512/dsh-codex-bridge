@@ -1,11 +1,10 @@
-/** Actual published rc.2 Host process; no private persistence file access or real model calls. */
+/** Actual published rc.3 Host process; no private persistence file access or real model calls. */
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import net from 'node:net';
 import { boot } from '@deepseek-ai/dsh-app-boot';
 import { Session, SessionId, deriveEventMessage } from '@deepseek-ai/dsh-session';
-import { InvariantError } from '@deepseek-ai/dsh-invariants';
 import { SessionQueryError } from '@deepseek-ai/dsh-session-query';
 import { SessionAlreadyExistsError, SessionAlreadyOwnedError, SessionFormatUnsupportedError, validateStoredEvents } from '@deepseek-ai/dsh-session-persistence';
 import { hostEntries } from './p3/host-config.mjs';
@@ -75,11 +74,9 @@ try {
   } else {
   if (creates) {
     if (mode === 'write') assert.equal(ctx.get('codexHistory').status().importEnabled, false);
-    const invalidTurn = structuredClone(imported.events);
-    invalidTurn[0].data.turn = 0;
-    const invalidId = SessionId('p3-invalid-turn');
-    assert.throws(() => ctx.get('sessions').create(invalidId, { seed: invalidTurn,
-      meta: { cwd: imported.header.cwd, createdAt: imported.header.createdAt, isSeeded: false } }), InvariantError);
+    const invalidId = SessionId('p3-invalid-header');
+    assert.throws(() => ctx.get('sessions').create(invalidId, { seed: imported.events,
+      meta: { cwd: imported.header.cwd, createdAt: -1, isSeeded: false } }), /createdAt|non-negative/);
     assert.equal(ctx.get('sessions').get(invalidId), undefined);
     assert.equal(await persistence.stat(invalidId), undefined);
     writer = await persistence.create(imported.header);

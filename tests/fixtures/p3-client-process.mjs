@@ -5,6 +5,7 @@ import * as cordis from '@deepseek-ai/cordis';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as jsx from 'react/jsx-runtime';
+import * as zod from 'zod';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as store from '@deepseek-ai/dsh-client-store';
 import * as slots from '@deepseek-ai/dsh-client-ui-slots';
@@ -26,7 +27,8 @@ try {
       props.title, props.collapsedContent, props.children);
   } });
   const staticModules = { '@deepseek-ai/cordis': cordis, 'react': React, 'react-dom': ReactDOM,
-    'react/jsx-runtime': jsx, '@deepseek-ai/dsh-client-store': store,
+    'react/jsx-runtime': jsx, zod, '@deepseek-ai/dsh-client-store': store,
+    '@tanstack/react-virtual': { useVirtualizer: () => { throw new Error('Chat virtualization is outside the context renderer fixture'); } },
     '@deepseek-ai/dsh-client-ui-primitives': primitives, '@deepseek-ai/dsh-client-ui-slots': slots };
   for (const name of ['modules', 'ui-conversation', 'ui-chat'])
     await import('@deepseek-ai/dsh-client-' + name + '/client');
@@ -35,7 +37,7 @@ try {
   const ids = facade.pendingQueue.map(row => row.id);
   facade.pendingQueue = facade.pendingQueue.filter(row => row !== registration);
   const modules = bootstrap.createClientModuleSystem(facade, { id: registration.id, exports: bootstrap }, {
-    boot: { rev: 'p3', entries: ids.map(id => ({ id, url: 'fixture/' + id, rev: 'p3' })),
+    boot: { rev: 'p3', release: { version: '0.2.2-rc.3' }, entries: ids.map(id => ({ id, url: 'fixture/' + id, rev: 'p3' })),
       batches: [{ phase: 'bootstrap', url: 'fixture/all', rev: 'p3', entries: ids }] },
     staticModules, loadBundle: async () => { throw new Error('No P3 network or dynamic artifact fallback'); },
   });
@@ -48,6 +50,7 @@ try {
   ctx.provide('slots', {
     inject: (_name, callback) => callback(),
     register: (descriptor, component) => { contributions.push({ descriptor, component }); return () => {}; },
+    registerFactory: (descriptor, component) => { contributions.push({ descriptor, component }); return () => {}; },
   });
   ctx.provide('uiSession', { provide: () => () => {} });
   const dictionaries = {};
@@ -57,6 +60,7 @@ try {
   });
   const settings = store.createSnapshotStore({ value: {} });
   ctx.provide('configForms', { get: () => settings });
+  ctx.provide('connection', { state: store.createSnapshotStore({ kind: 'connected' }) });
   await chat.apply(ctx);
   const renderer = contributions.find(row => row.descriptor.name === 'conversation.chat.node' && row.descriptor.key === 'context');
   assert(renderer?.component, 'Public Chat apply registers its production Context renderer');

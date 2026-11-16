@@ -1,4 +1,4 @@
-/** Host-only orchestration over the unchanged 0.0.9 public faces. */
+/** Host-only orchestration over the main bridge's public faces. */
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import type { SessionStore } from '@deepseek-ai/dsh-session';
@@ -10,6 +10,7 @@ import { WorkspaceMapper } from 'dsh-codex-bridge/workspace';
 import { ImportPlanner } from 'dsh-codex-bridge/planner';
 import { SessionImporter } from 'dsh-codex-bridge/importer';
 import { BatchImporter, type BatchPlan } from 'dsh-codex-bridge/batch';
+import type { ImportPlan, ImportRequest } from 'dsh-codex-bridge/planner';
 import { z } from 'zod';
 import type { UiHostConfig } from './config.js';
 import type { HistoryList, HistoryPreview, HistoryReview, HistoryOutcome, ReviewSelection } from './shared.js';
@@ -99,6 +100,7 @@ export class HistoryRuntime {
         { dryRun: true, cache: 'skip', signal: this.#abort.signal });
       const view: HistoryReview = { handle: randomUUID(), digest: plan.planDigest, expiresAtMs: Date.now()+600000,
         rows: plan.entries.map(entry => ({ threadId: entry.threadId, sessionId: entry.sessionId, state: entry.plan?.state ?? entry.state,
+          title: entry.plan?.conversion.source.title?.slice(0, 512) ?? null,
           targetCwd: entry.plan?.workspace?.canonicalCwd ?? null, workspaceAction: entry.plan?.workspace?.action ?? null,
           losses: entry.plan?.conversion.requiredLosses ?? [], blockers: entry.plan?.blockers ?? [entry.error ?? 'planning-failed'], warnings: entry.plan?.warnings ?? [] })) };
       this.#reviews.set(view.handle, { plan, view, dryChecked: false }); return view;
@@ -107,20 +109,62 @@ export class HistoryRuntime {
   execute(handle: string, digest: string, dryRun: boolean): Promise<HistoryOutcome> {
     return this.#run(async () => {
       this.#assertCapabilities();
-      const stored = this.#reviews.get(handle);
-      if (!stored || stored.view.expiresAtMs <= Date.now()) { this.#reviews.delete(handle); throw Error('review-expired'); }
-      if (stored.view.digest !== digest) throw Error('review-mismatch');
+      const stored = this.#getReview(handle, digest);
       if (!dryRun && !this.config.writeEnabled) throw Error('write-disabled');
       if (!dryRun && !stored.dryChecked) throw Error('dry-run-required');
       if (!dryRun) this.#reviews.delete(handle); // Consume before any possible write, including response loss.
-      const result = await this.#batch.apply(stored.plan, { dryRun, signal: this.#abort.signal,
-        selectedThreadIds: stored.plan.entries.map(entry => entry.threadId),
-        ...dryRun ? {} : { approval: { planDigest: stored.plan.planDigest, items: stored.plan.entries.flatMap(entry => entry.plan ? [{ threadId: entry.threadId, planDigest: entry.plan.planDigest, acceptedLosses: entry.plan.request.conversion.acceptedLosses }] : []) } } });
-      stored.dryChecked = dryRun && result.entries.length > 0 && result.entries.every(entry => entry.state === 'dry-run');
-      return { dryRun, state: result.state, rows: result.entries.map(entry => ({ threadId: entry.threadId, sessionId: entry.sessionId, state: entry.state,
-        verified: entry.result?.sessionVerified ?? false, mayHaveCommitted: entry.outcomeMayHaveCommitted,
-        reason: entry.result?.reason ?? entry.error, warnings: entry.result?.warnings ?? [] })) };
+      const outcome = await this.#apply(stored.plan, dryRun);
+      stored.dryChecked = dryRun && outcome.rows.length > 0 && outcome.rows.every(row => row.state === 'dry-run');
+      return outcome;
     });
+  }
+  confirmSingle(handle: string, digest: string, dryRun: boolean): Promise<HistoryOutcome> {
+    return this.#run(async () => {
+      this.#assertCapabilities();
+      const { plan } = this.#getReview(handle, digest);
+      const original = plan.entries[0]?.plan;
+      if (plan.inputCount !== 1 || !original || original.request.conversion.acceptedLosses.length
+        || (original.state !== 'ready' && original.state !== 'needs-review')) throw Error('invalid-selection');
+      if (!dryRun && !this.config.writeEnabled) throw Error('write-disabled');
+      if (!dryRun) this.#reviews.delete(handle);
+
+      // Consent covers exactly the losses, source and destination shown in the dialog.
+      const request: ImportRequest = { ...original.request, conversion: {
+        ...original.request.conversion, acceptedLosses: original.conversion.requiredLosses,
+      } };
+      const approved = await this.#batch.plan([request], { dryRun: true, cache: 'skip', signal: this.#abort.signal });
+      const current = approved.entries[0]?.plan;
+      if (!current || !this.#sameConfirmation(original, current)) {
+        return { dryRun: true, state: 'stale-plan', rows: [{ threadId: request.threadId, sessionId: original.sessionId,
+          state: 'stale-plan', verified: false, mayHaveCommitted: false, reason: 'reviewed-plan-changed', warnings: [] }] };
+      }
+      const trial = await this.#apply(approved, true);
+      if (dryRun || trial.rows[0]?.state !== 'dry-run') return trial;
+      this.#assertCapabilities();
+      return this.#apply(approved, false);
+    });
+  }
+  #getReview(handle: string, digest: string): StoredReview {
+    const stored = this.#reviews.get(handle);
+    if (!stored || stored.view.expiresAtMs <= Date.now()) { this.#reviews.delete(handle); throw Error('review-expired'); }
+    if (stored.view.digest !== digest) throw Error('review-mismatch');
+    return stored;
+  }
+  #sameConfirmation(original: ImportPlan, current: ImportPlan): boolean {
+    return current.state === 'ready' && original.sessionId === current.sessionId
+      && original.sourceFingerprint === current.sourceFingerprint
+      && original.workspace?.fingerprint === current.workspace?.fingerprint
+      && JSON.stringify(original.target) === JSON.stringify(current.target)
+      && JSON.stringify(original.conversion.requiredLosses) === JSON.stringify(current.conversion.requiredLosses)
+      && JSON.stringify(original.warnings) === JSON.stringify(current.warnings);
+  }
+  async #apply(plan: BatchPlan, dryRun: boolean): Promise<HistoryOutcome> {
+    const result = await this.#batch.apply(plan, { dryRun, signal: this.#abort.signal,
+      selectedThreadIds: plan.entries.map(entry => entry.threadId),
+      ...dryRun ? {} : { approval: { planDigest: plan.planDigest, items: plan.entries.flatMap(entry => entry.plan ? [{ threadId: entry.threadId, planDigest: entry.plan.planDigest, acceptedLosses: entry.plan.request.conversion.acceptedLosses }] : []) } } });
+    return { dryRun, state: result.state, rows: result.entries.map(entry => ({ threadId: entry.threadId, sessionId: entry.sessionId, state: entry.state,
+      verified: entry.result?.sessionVerified ?? false, mayHaveCommitted: entry.outcomeMayHaveCommitted,
+      reason: entry.result?.reason ?? entry.error, warnings: entry.result?.warnings ?? [] })) };
   }
   async close(): Promise<void> {
     if (this.#closed) return;

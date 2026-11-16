@@ -1,16 +1,17 @@
 {
-  "binaryVersion": "codex-cli 0.162.0-alpha.2",
+  "binaryVersion": "codex-cli 0.169.0-alpha.11.1",
   "protocolSurface": "non-experimental, not a stable binary release",
   "allowedMethods": [
     "initialize",
     "initialized",
     "thread/list",
-    "thread/read"
+    "thread/read",
+    "thread/turns/list",
+    "thread/items/list"
   ],
   "experimentalApi": false,
   "excludedMethods": [
-    "thread/turns/list",
-    "thread/items/list",
+    "thread/items/read",
     "thread/resume",
     "thread/start",
     "turn/start"
@@ -24,11 +25,15 @@
   "threadPath": "unstable; excluded",
   "unhydratedCounts": null,
   "schemaSha256": {
-    "v1/InitializeParams.json": "b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e",
+    "v1/InitializeParams.json": "c608ff6bdd94e661423dca9b44cd1dcea7eac610f74e1310284c61eab64280bc",
     "v1/InitializeResponse.json": "62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9",
-    "v2/ThreadListParams.json": "bf5abcb5363c177f8d6b60e6193c76ad8807d6452b67a73ee2f1d77dfe427ac9",
-    "v2/ThreadListResponse.json": "8c56fbe4504de9813753bf0fae07a89a3236a1b7d31a0729800c9c9359b55754",
+    "v2/ThreadListParams.json": "e3b8159458d241284c0161636061b4cd8ab4f041f108a3d3183f336f5ac71ac3",
+    "v2/ThreadListResponse.json": "b773c7858898812af0cb78e7a65095d98c8611928f3c40ab7ba9d7a5c3a1eb1e",
     "v2/ThreadReadParams.json": "dfe040c6ac71d30795b8be3f3ff232e66f362a37f883b491e5d1ea367f470db4",
-    "v2/ThreadReadResponse.json": "ba6168f666c09b4e37d2f4f9abe113dfd4b03b9ada141fb8576554d262c00dda"
+    "v2/ThreadReadResponse.json": "297065118a91860d06169a535f31447f893a8edd5c88e5ab5e8932310bc64291",
+    "v2/ThreadTurnsListParams.json": "2a8b93d7d4437cc25e16a1dde16d8db3c338d39e16c5eece2a56e943a21577d7",
+    "v2/ThreadTurnsListResponse.json": "1771280212d97d8f5c745dfd8b95280cd2c4927ea58d4e3d6de6f6a0326dd1d0",
+    "v2/ThreadItemsListParams.json": "44c3c947e226be40e8769b81de4e27bd54c69cf7fc8a4fde977fe8211d80065c",
+    "v2/ThreadItemsListResponse.json": "5c96504e24d9424a645da523767b17d1483e93d26ae34d6ea01aa69ab48e732e"
   }
 }

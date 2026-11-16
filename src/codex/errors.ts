@@ -4,7 +4,7 @@ export type ReadErrorCode =
   | 'invalid-frame' | 'frame-too-large' | 'truncated-frame' | 'unexpected-response'
   | 'rpc-failed' | 'request-timeout' | 'cancelled' | 'concurrency-limit'
   | 'write-method-denied' | 'invalid-response' | 'identity-mismatch'
-  | 'cursor-cycle' | 'scan-limit' | 'content-limit';
+  | 'cursor-cycle' | 'scan-limit' | 'content-limit' | 'source-changed';
 
 /** Safe to log; no server text or hidden reasoning is attached. */
 export class CodexReadError extends Error {

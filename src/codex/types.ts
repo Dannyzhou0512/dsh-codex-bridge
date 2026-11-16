@@ -1,7 +1,7 @@
 /** Public P2 values; no Harness runtime or Session schema is involved. */
 export type JsonValue = null | boolean | number | string | readonly JsonValue[] | JsonRecord;
 export interface JsonRecord { readonly [key: string]: JsonValue }
-export type HistoryMethod = 'thread/list' | 'thread/read';
+export type HistoryMethod = 'thread/list' | 'thread/read' | 'thread/turns/list' | 'thread/items/list';
 export type SourceKind = 'cli' | 'vscode' | 'exec' | 'appServer' | 'subAgent'
   | 'subAgentReview' | 'subAgentCompact' | 'subAgentThreadSpawn' | 'subAgentOther' | 'unknown';
 

@@ -10,8 +10,8 @@ const kinds = ['cli', 'vscode', 'exec', 'appServer', 'subAgent', 'subAgentReview
 const collect = (value: string, previous: string[] = []) => [...previous, value];
 export function parseInvocation(ctx: Context): CliInvocation | null {
   let accepted: CliInvocation | null = null;
-  const program = new Command().name('dsh-codex-bridge').version('0.0.9', '--bridge-version')
-    .description('Public Codex history import through a dedicated DSH rc.2 profile; writes require a reviewed digest.');
+  const program = new Command().name('dsh-codex-bridge').version('0.0.10', '--bridge-version')
+    .description('Public Codex history import through a dedicated DSH 0.2.2-rc.3 profile; writes require a reviewed digest.');
   program.command('list').description('List public history metadata; counts remain unknown until hydration')
     .addOption(new Option('--source-kind <kind>', 'public source filter (repeatable)').choices(kinds).argParser(collect))
     .option('--archived', 'list archived threads')

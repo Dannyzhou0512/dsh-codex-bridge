@@ -14,7 +14,7 @@ async function environment(t) {
   await cp(join(project, 'tests/fixtures/p3/mock-llm.mjs'), join(mockRoot, 'index.mjs'));
   await writeFile(join(mockRoot, 'package.json'), JSON.stringify({
     name: 'p3-mock-model', version: '0.0.0', type: 'module', main: 'index.mjs',
-    peerDependencies: { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/dsh-llm': '0.2.0-rc.2' },
+    peerDependencies: { '@deepseek-ai/cordis': '4.1.0', '@deepseek-ai/dsh-llm': '0.2.2-rc.3' },
   }));
   return directory;
 }

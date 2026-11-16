@@ -18,7 +18,7 @@ let report;
 try {
   ctx = await boot('p1-composition', config, patches);
   assert(ctx instanceof Context, 'app-boot must use the same Cordis Context');
-  assert.equal(getDshRuntimeVersion(), '0.2.0-rc.2');
+  assert.equal(getDshRuntimeVersion(), '0.2.2-rc.3');
   const bridge = ctx.get('codexHistory');
   assert(bridge instanceof Service, 'Built plugin must inherit the host Cordis Service');
   const missing = ['sessions', 'sessionPersistence', 'sessionQuery', 'workspaceRegistry'];
