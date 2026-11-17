@@ -49,7 +49,7 @@ if(artifacts.length!==1||!artifacts[0].remote)throw Error('Missing public Host/R
 const artifact=artifacts[0];await writeFile(join(dir,'lib/typert.host.js'),artifact.js);await writeFile(join(dir,'lib/typert.host.d.ts'),artifact.dts);
 await writeFile(join(dir,'lib/typert.remote-client.js'),artifact.remote.js);await writeFile(join(dir,'lib/typert.remote-client.d.ts'),artifact.remote.dts);
 await writeFile(join(dir,'lib/typert.remote-client.d.ts.map'),artifact.remote.dtsMap);
-await build({entryPoints:[join(dir,'src/index.ts'),join(dir,'src/shared.ts'),join(dir,'src/runtime.ts'),join(dir,'src/config.ts')],outdir:join(dir,'lib'),platform:'node',format:'esm',target:'es2023',bundle:false});
+await build({entryPoints:['index','shared','runtime','config','setup','native-confirm'].map(name=>join(dir,`src/${name}.ts`)),outdir:join(dir,'lib'),platform:'node',format:'esm',target:'es2023',bundle:false});
 tsc('tsconfig.client.json');
 const external=['react','react/jsx-runtime','@deepseek-ai/cordis','@deepseek-ai/dsh-client-ui-primitives'];
 const client=await build({entryPoints:[join(dir,'src/client/index.tsx')],bundle:true,write:false,platform:'browser',jsx:'automatic',format:'cjs',target:'es2023',external,metafile:true});

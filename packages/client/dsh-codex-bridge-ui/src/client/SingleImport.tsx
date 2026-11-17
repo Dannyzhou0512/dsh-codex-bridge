@@ -20,9 +20,11 @@ interface Props {
   readonly onRemap: (cwd: string) => void;
   readonly onReview: () => void;
   readonly onConfirm: (dryRun: boolean) => void;
+  readonly onEnableWrites?: () => void;
+  readonly setupNotice?: LocaleKey | null;
 }
 
-export function SingleImport({ state, label, busy, error, writeEnabled, onClose, onRemap, onReview, onConfirm }: Props) {
+export function SingleImport({ state, label, busy, error, writeEnabled, onClose, onRemap, onReview, onConfirm, onEnableWrites, setupNotice }: Props) {
   const inputId = useId();
   const row = state.review?.rows[0];
   const result = state.outcome?.rows[0];
@@ -39,6 +41,7 @@ export function SingleImport({ state, label, busy, error, writeEnabled, onClose,
       {canConfirm&&<>
         <Button variant="outline" onClick={()=>onConfirm(true)}>{label('dryOnly')}</Button>
         {writeEnabled&&<Button onClick={()=>onConfirm(false)}>{label(row.losses.length ? 'acceptAndImport' : 'importOneConfirm')}</Button>}
+        {!writeEnabled&&result?.state==='dry-run'&&onEnableWrites&&<Button onClick={onEnableWrites}>{label('setup-enable-writes')}</Button>}
       </>}
       {!canConfirm&&!busy&&!imported&&!completed&&<Button onClick={onReview}>{label('checkAgain')}</Button>}
     </div>}>
@@ -66,6 +69,7 @@ export function SingleImport({ state, label, busy, error, writeEnabled, onClose,
 
       {busy&&<p role="status">{label('busy')}</p>}
       {error&&<p role="alert">{label(error==='write'?'writeUnconfirmed':'error')}</p>}
+      {setupNotice&&<p role="alert">{label(setupNotice)}</p>}
       {!busy&&imported&&<p role="status">{label('alreadyThere')}</p>}
       {!busy&&completed&&<p role="status">{label('singleCompleted')}</p>}
       {!busy&&result?.state==='dry-run'&&<p role="status">{label('trialPassed')}</p>}

@@ -19,10 +19,12 @@ $env:DSH_HOME = Join-Path (Get-Location).Path '.dsh-bridge-test'
 两个 scoped 包已发布到 npm 的 `preview` 标签。侧栏需要同一个 profile 同时安装主包和 UI。
 
 ~~~powershell
-dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzhou/dsh-codex-bridge-ui@0.0.9' --ignore-scripts
+dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzhou/dsh-codex-bridge-ui@0.0.10' --ignore-scripts
 ~~~
 
 从本仓库的旧 GitHub 预览包迁移时，先备份目标 profile 自己的配置补丁，在退出 Desktop 后移除旧 UI 和旧主包，再安装上述一对包。保留现有 Session 和 Workspace 数据以及 `dsh-codex-bridge-ui`、`dsh-codex-bridge-host` 实例 ID 的配置。若自定义补丁中还写了旧的模块 `name`（包括专用 CLI 的入口），把它改为对应 scoped 名称。两个发行渠道各自配套安装。
+
+已用 npm 安装 scoped 主包 `0.0.10` 的用户，只需更新同一 profile 的侧栏包。退出 Desktop，运行 `dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge-ui@0.0.10' --ignore-scripts`，再打开 Desktop。保留原有的 `dsh-codex-bridge-ui` 配置。首次配置或更换来源的操作见 [README](../README.md#2-配置-codex-历史来源)。
 
 使用旧 GitHub 归档时，从[旧版 Release](https://github.com/Dannyzhou0512/dsh-codex-bridge/releases/tag/v0.0.10-preview.1)下载配套的两个归档，并按[该版本的指南](https://github.com/Dannyzhou0512/dsh-codex-bridge/blob/v0.0.10-preview.1/docs/USAGE.md)安装。
 

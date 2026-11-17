@@ -18,6 +18,8 @@
     "src/index.ts",
     "src/shared.ts",
     "src/runtime.ts",
-    "src/config.ts"
+    "src/config.ts",
+    "src/setup.ts",
+    "src/native-confirm.ts"
   ]
 }

@@ -13,6 +13,15 @@ test('generated strict Host Remote uses real Gateway; absent capabilities stay n
  const ctx=new Context();await ctx.plugin(Registry);await ctx.plugin(RemoteAccess);await ctx.plugin(Gateway);ctx.typert.register(TYPERT);
  const owner=await ctx.plugin(host);const value=await invokeBridge(ctx, {namespace:'codexBridgeUi',method:'status',args:{}});
  assert.equal(value.importEnabled,false);assert.equal(value.sourceState,'not-configured');assert.equal(value.capabilities.length,3);assert.ok(value.capabilities.every(c=>!c.available));
+ assert.equal(value.setupAvailable,false);
+ assert.deepEqual(await invokeBridge(ctx, {namespace:'codexBridgeUi',method:'testSource',args:{draft:{executable:'unsafe.exe',codexHome:'x',cwd:''}}}),{state:'setup-unavailable',ticket:null});
+ await assert.rejects(invokeBridge(ctx, {namespace:'codexBridgeUi',method:'testSource',args:{draft:{executable:'unsafe.exe',codexHome:'x',cwd:''},confirmed:true}}));
+ const {nativeSetupAvailable}=await import(libFile('native-confirm.js'));
+ const dropEditor=ctx.provide('configEditor',{entries:()=>[{options:{id:'dsh-codex-bridge-ui',name:'@dannyzhou/dsh-codex-bridge-ui'}}]});
+ const withEditor=await invokeBridge(ctx,{namespace:'codexBridgeUi',method:'status',args:{}});
+ assert.equal(withEditor.setupAvailable,nativeSetupAvailable());
+ if(withEditor.setupAvailable) assert.equal((await invokeBridge(ctx,{namespace:'codexBridgeUi',method:'testSource',args:{draft:{executable:'unsafe.exe',codexHome:'x',cwd:''}}})).state,'setup-executable');
+ dropEditor();
  await assert.rejects(invokeBridge(ctx, {namespace:'codexBridgeUi',method:'status',args:{executable:'unsafe'}}));
  await owner.dispose();await assert.rejects(invokeBridge(ctx, {namespace:'codexBridgeUi',method:'status',args:{}}));await ctx.fiber.dispose();
 });
@@ -31,11 +40,34 @@ test('packaged browser factory: real Gateway, SlotRegistry and React; error reco
  const stopRoot=slotRegistry.register({name:'root',children:{main:{kind:'keyed',scope:'root'},'sidebar.panellist':{kind:'list',scope:'root'}}},()=>null);
  const dictionaries=new Map();c.provide('locale',{register:(name,entries)=>{dictionaries.set(name,entries.en);return()=>dictionaries.delete(name)},bind:name=>key=>dictionaries.get(name)?.[key]??key});c.provide('layout',{selectPanel(){}});
  // Shared visual Button is a test adapter; real SDK framework/Remote/registry are loaded.
- const primitive={Button:({children,variant,size,...props})=>React.createElement('button',props,children)};
+ const primitive={Button:({children,variant,size,...props})=>React.createElement('button',props,children),Input:props=>React.createElement('input',props)};
  const companion=await factory(new URL(libFile('client.js')),{...base,'@deepseek-ai/dsh-client-ui-primitives':primitive});
  const owner=await c.plugin(companion);await new Promise(r=>setTimeout(r,0));assert.equal(slotRegistry.entries('main').length,1);assert.equal(slotRegistry.entries('sidebar.panellist')[0].options.id,'codex-history');
  const entry=slotRegistry.entries('main')[0],face=entry.inject();const withdrawn=c.remote.codexBridgeUi.status;assert.equal((await face.read()).sourceState,'not-configured');assert.ok(calls.every(e=>e==='codexBridgeUi/status'));
  const app=ReactRoot.createRoot(document.getElementById('app'));ReactDOM.flushSync(()=>app.render(React.createElement(entry.component,face)));await new Promise(r=>setTimeout(r,30));assert.match(document.body.textContent,/Connected to Harness/);assert.match(document.body.textContent,/not configured/);
+ const button=text=>[...document.querySelectorAll('button')].find(element=>element.textContent===text);
+ const wait=async predicate=>{const start=Date.now();while(!predicate()){assert.ok(Date.now()-start<5000,document.body.textContent);await new Promise(resolve=>setTimeout(resolve,15));}};
+ const source={executable:'codex.exe',codexHome:'synthetic',cwd:''};
+ let savedSource=false, tests=0;
+ const setupFace={...face,read:async()=>({...await face.read(),setupAvailable:true,sourceState:savedSource?'configured':'not-configured'}),setup:{
+  suggestions:async()=>source,
+  test:async draft=>{assert.deepEqual(draft,source);tests++;return{state:'setup-empty',ticket:'local-test'};},
+  save:async ticket=>{assert.equal(ticket,'local-test');savedSource=true;return 'setup-saved';},
+ }};
+ ReactDOM.flushSync(()=>app.render(React.createElement(entry.component,setupFace)));
+ await wait(()=>button('Set up Codex history'));
+ button('Set up Codex history').click();
+ await wait(()=>button('Start Codex and test connection')?.disabled===false);
+ assert.equal(tests,0);
+ assert.equal(button('Save and start browsing').disabled,true);
+ button('Start Codex and test connection').click();
+ await wait(()=>button('Save and start browsing')?.disabled===false);
+ assert.match(document.body.textContent,/No scannable history/);
+ button('Save and start browsing').click();
+ await wait(()=>button('Change source'));
+ assert.equal(savedSource,true);
+ assert.equal(tests,1);
+ ReactDOM.flushSync(()=>app.render(React.createElement(entry.component,face)));
  await hostOwner.dispose();await assert.rejects(face.read());const refresh=[...document.querySelectorAll('button')].find(b=>b.textContent==='Refresh status');refresh.click();await new Promise(r=>setTimeout(r,30));assert.match(document.body.textContent,/did not complete/);
  app.unmount();await owner.dispose();assert.equal(slotRegistry.entries('main').length,0);assert.equal(slotRegistry.entries('sidebar.panellist').length,0);assert.equal(document.querySelectorAll('style[data-codex-bridge-ui]').length,0);assert.equal(c.get('remote.codexBridgeUi'),undefined);assert.equal(dictionaries.size,0);assert.equal((await withdrawn()).ok,false);
  stopRoot();await c.fiber.dispose();await h.fiber.dispose();dom.window.close();for(const [k,v]of saved){if(v)Object.defineProperty(globalThis,k,v);else delete globalThis[k];}

@@ -25,6 +25,9 @@ test('archive is independent, browser-safe and never embeds SDK or private artif
   assert.ok(files.includes('package/'+path.slice(2)),'Missing archive entry '+path);
  }
  const client=tar(['-xOf',archive,'package/lib/client.js']);assert.ok(client.startsWith('window.__ModuleLoader__.load'));assert.ok(!/require\(["'](?:node:|fs|child_process|path|@deepseek-ai\/dsh-session|@deepseek-ai\/dsh-workspace|dsh-codex-bridge)["']\)/.test(client));
+ assert.ok(files.includes('package/lib/setup.js'));
+ assert.ok(files.includes('package/lib/native-confirm.js'));
+ assert.doesNotMatch(client,/EncodedCommand|WindowsPowerShell|node:child_process/);
  let registration;
  runInNewContext(client,{window:{__ModuleLoader__:{load(value){registration=value;}}}});
  assert.equal(registration?.id,m.name);

@@ -7,7 +7,7 @@
 | npm 安装包 | 用途 |
 | --- | --- |
 | [`@dannyzhou/dsh-codex-bridge@0.0.10`](https://www.npmjs.com/package/@dannyzhou/dsh-codex-bridge/v/0.0.10) | 主插件，负责读取、转换和迁移会话 |
-| [`@dannyzhou/dsh-codex-bridge-ui@0.0.9`](https://www.npmjs.com/package/@dannyzhou/dsh-codex-bridge-ui/v/0.0.9) | 在 DSH 侧栏添加「Codex 历史」 |
+| [`@dannyzhou/dsh-codex-bridge-ui@0.0.10`](https://www.npmjs.com/package/@dannyzhou/dsh-codex-bridge-ui/v/0.0.10) | 在 DSH 侧栏添加「Codex 历史」和 Windows 来源配置向导 |
 
 ## 1. 在 DSH 中安装
 
@@ -15,7 +15,7 @@
 
 ~~~text
 @dannyzhou/dsh-codex-bridge@0.0.10
-@dannyzhou/dsh-codex-bridge-ui@0.0.9
+@dannyzhou/dsh-codex-bridge-ui@0.0.10
 ~~~
 
 请保留完整包名和版本号。这两个版本发布在 npm 的 `preview` 标签下，使用上面的精确版本可以直接安装。
@@ -23,12 +23,19 @@
 也可以在 Desktop 首次启动并初始化 profile 后，退出应用，再用 PowerShell 一次安装两个包。
 
 ~~~powershell
-dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzhou/dsh-codex-bridge-ui@0.0.9' --ignore-scripts
+dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzhou/dsh-codex-bridge-ui@0.0.10' --ignore-scripts
 ~~~
 
 如果 PowerShell 找不到 `dsh`，使用 DSH 安装目录下 `resources/runtime/cli/bin/dsh.cmd` 的完整路径。使用自定义 `DSH_HOME` 时，终端应与 Desktop 指向同一个目录。已安装旧 GitHub 预览包的用户按[升级说明](docs/USAGE.md#npm-预览包)更换两个包。
 
 ## 2. 配置 Codex 历史来源
+
+1. 从 Windows DSH 侧栏打开 **Codex 历史**。首次使用点 **配置 Codex 历史**，已有来源则在扫描按钮同一行点 **更换来源**。
+2. 核对或填写 `codex.exe` 的完整路径和 Codex 历史目录。点 **启动 Codex 并测试连接**，在 Windows 弹窗检查路径并确认。若已连接但没有历史，请核对目录是不是 Codex 实际使用的 `CODEX_HOME`。
+3. 点 **保存并开始浏览**，在 Windows 弹窗确认保存，然后点 **扫描历史**。保存新来源后，实际导入需要在试跑通过后单独开启。
+
+<details>
+<summary>没有配置按钮时，用 YAML 手动配置</summary>
 
 退出 DSH，编辑当前 Desktop profile 的 `profiles/desktop/cordis.patch.yml`。默认 DSH 根目录是用户目录下的 `.dsh`，使用自定义 `DSH_HOME` 时，从自定义根目录进入。
 
@@ -47,7 +54,7 @@ dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzho
       clientInfo:
         name: dsh-codex-bridge
         title: Codex history import
-        version: '0.0.9'
+        version: '0.0.10'
       limits:
         requestTimeoutMs: 30000
         shutdownTimeoutMs: 3000
@@ -69,12 +76,14 @@ dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzho
 
 首次使用保留 `writeEnabled: false`，然后重新启动 DSH。[配置 JSON 示例](docs/UI_CONFIG_EXAMPLE.json)
 
+</details>
+
 ## 3. 试跑、导入并续聊
 
 1. 从侧栏打开 **Codex 历史 → 扫描历史**。找到目标会话，点 **预览**，核对标题和内容。
 2. 点 **导入此会话**，核对目标目录和转换变化。原目录不可用时，填写一个已存在的绝对目录，再点 **重新检查**。
 3. 先点 **仅试跑**。看到「试跑通过」后，确认目标目录合适。Dry-run 期间不会创建导入会话或工作区。
-4. 要实际导入，退出 DSH，把同一配置中的 `writeEnabled` 改为 `true` 并重新启动。重新打开该会话的确认面板，点击 **接受上述变化并导入** 或 **确认导入**。
+4. 点 **允许实际导入**，在 Windows 弹窗确认，再重新审核目标会话。确认面板会显示 **接受上述变化并导入** 或 **确认导入**。使用手动配置时，也可将 `writeEnabled` 设为 `true` 后重启 DSH。
 5. 看到「已导入并验证原生会话」后，从 DSH 左侧**目标工作区**打开该会话，在底部输入框继续任务。Codex 的旧回复在「对话」里标为「来自 Codex 的历史回复」。提示「这条会话已导入」时，可以直接打开已有会话。
 
 迁移范围包括公开文本，以及可取得的工具信息和公开推理摘要。图片与附件可能会省略，具体以确认面板列出的转换变化为准。[批量导入与 Web 使用指南](docs/USAGE.md#ui) · [迁移限制](docs/LIMITATIONS.md)
@@ -84,9 +93,9 @@ dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzho
 | 看到的情况 | 怎么处理 |
 | --- | --- |
 | 侧栏没有「Codex 历史」 | 确认两个包都安装在当前 profile，侧栏包已启用，然后重启 DSH。 |
-| 页面提示「尚未配置来源」或「来源配置无效」 | 核对正在使用的 profile、`dsh-codex-bridge-ui` 配置和三个本机路径，再重启。 |
-| 能扫描，但找不到某条会话 | 核对 `codexHome` 是否与原 Codex 使用的目录一致。会话已归档时，勾选「归档会话」再扫描。 |
-| 只能试跑，无法实际导入 | 试跑后，确认目标无误，再在当前 profile 启用 `writeEnabled: true` 并重启。 |
+| 页面提示「尚未配置来源」或「来源配置无效」 | 点「配置 Codex 历史」，核对程序和历史目录。若按钮未显示，检查侧栏版本与 [手动配置](#2-配置-codex-历史来源)。 |
+| 能扫描，但找不到某条会话 | 用「更换来源」核对历史目录。会话已归档时，勾选「归档会话」再扫描。 |
+| 只能试跑，无法实际导入 | 试跑通过后点「允许实际导入」，在 Windows 弹窗确认，再重新审核。 |
 | 试跑通过，但工作区里看不到会话 | 完成第 4 步的实际导入后，再到确认面板显示的目标工作区查找。 |
 
 ## CLI 和配套 Codex Skill

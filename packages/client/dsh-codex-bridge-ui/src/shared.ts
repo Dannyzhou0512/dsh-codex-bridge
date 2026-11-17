@@ -1,12 +1,25 @@
 /** Bounded browser wire values. No Node or Harness core runtime imports. */
 export interface BridgeUiStatus {
   readonly schemaVersion: 1;
-  readonly companionVersion: '0.0.9';
+  readonly companionVersion: '0.0.10';
   readonly harnessVersion: '0.2.2-rc.3';
   readonly sourceState: 'not-configured' | 'configured' | 'invalid-config';
   readonly importEnabled: boolean;
+  readonly setupAvailable: boolean;
   readonly capabilities: readonly { readonly name: string; readonly available: boolean }[];
 }
+export interface SourceDraft {
+  readonly executable: string;
+  readonly codexHome: string;
+  readonly cwd: string;
+}
+export type SourceSetupError = 'setup-unavailable' | 'setup-busy' | 'setup-cancelled' |
+  'setup-executable' | 'setup-directory' | 'setup-cwd' | 'setup-connection' | 'setup-stale' | 'setup-save-failed';
+export interface SourceTestResult {
+  readonly state: 'setup-connected' | 'setup-empty' | SourceSetupError;
+  readonly ticket: string | null;
+}
+export type SourceSaveResult = 'setup-saved' | SourceSetupError;
 export interface ThreadRow {
   readonly id: string; readonly title: string | null; readonly cwd: string;
   readonly createdAtMs: number; readonly updatedAtMs: number; readonly status: string;
