@@ -2,19 +2,7 @@
 
 ## Windows 快速开始
 
-1. 在目标 DSH 启动器运行 `dsh --version`，确认是 `0.2.2-rc.3`。从 [GitHub 预览版](https://github.com/Dannyzhou0512/dsh-codex-bridge/releases/tag/v0.0.10-preview.1) 下载 `dsh-codex-bridge-0.0.10.tgz` 和 `dsh-codex-bridge-ui-0.0.9.tgz`。可用 `Get-FileHash -Algorithm SHA256` 将包的校验值与 `SHA256SUMS.txt` 核对。
-2. 首次使用时先启动 Desktop 一次，初始化目标 profile，再通过应用菜单退出。在 PowerShell 切换到下载目录，用当前 Desktop 使用的 DSH 启动器安装两个包。若 `dsh` 未加入 PATH，在下面命令中使用安装目录内的 `resources/runtime/cli/bin/dsh.cmd` 完整路径。若 Desktop 使用自定义 `DSH_HOME`，在 PowerShell 中设置相同目录。
-
-   ```powershell
-   $main = (Resolve-Path -LiteralPath '.\dsh-codex-bridge-0.0.10.tgz').Path
-   $ui = (Resolve-Path -LiteralPath '.\dsh-codex-bridge-ui-0.0.9.tgz').Path
-   dsh plugin --profile desktop add $main $ui --ignore-scripts
-   ```
-
-3. 在目标 `profiles/desktop/cordis.patch.yml` 中找到 `dsh-codex-bridge-ui` 条目，按 [配置示例](UI_CONFIG_EXAMPLE.json) 补齐它的 `config`。把 `reader.executable` 填成可信 Codex 可执行文件的完整路径，`reader.args` 设为 `[app-server]`，`reader.cwd` 与 `reader.codexHome` 填自己的目录。已有条目直接编辑。首次使用保持 `writeEnabled: false`。
-4. 打开 Desktop，进入「Codex 历史」，点「扫描历史」和目标会话的「预览」。在预览顶部点「导入此会话」，核对目标目录，点「仅试跑」。确认需要实际导入时，在同一配置中启用 `writeEnabled: true`，重启 Desktop，再从该会话的确认面板导入。完成后在目标工作区打开会话。
-
-先用目标启动器的 `dsh --version` 确认版本为 **0.2.2-rc.3**。这版主插件是 `0.0.10`，配套 UI `0.0.9` 为预览。使用专用隔离 profile 初次试跑，通过后再决定实际目标环境。
+按 README 中的[安装](../README.md#1-在-dsh-中安装)、[配置](../README.md#2-配置-codex-历史来源)和[试跑、导入并续聊](../README.md#3-试跑导入并续聊)步骤开始。适用版本为 DSH `0.2.2-rc.3`。首次使用保留 `writeEnabled: false`。
 
 首次试跑时，在单独的 PowerShell 窗口指定一个新的 Harness home。以下示例把它放在当前项目内，关闭该窗口后环境变量不会影响其他启动器。
 
@@ -25,6 +13,18 @@ $env:DSH_HOME = Join-Path (Get-Location).Path '.dsh-bridge-test'
 ## 构建与安装
 
 根目录npm ci --ignore-scripts、npm run package:verified生成新的已验证tar路径。可选UI先在根目录build，再到packages/client/dsh-codex-bridge-ui安装开发依赖并npm test，输出新的UI测试tar路径。用你的已安装dsh公开plugin管理器安装这些本机tar；不要把Git URL直接当built bundle，不自动安装SDK peers。
+
+## npm 预览包
+
+两个 scoped 包已发布到 npm 的 `preview` 标签。侧栏需要同一个 profile 同时安装主包和 UI。
+
+~~~powershell
+dsh plugin --profile desktop add '@dannyzhou/dsh-codex-bridge@0.0.10' '@dannyzhou/dsh-codex-bridge-ui@0.0.9' --ignore-scripts
+~~~
+
+从本仓库的旧 GitHub 预览包迁移时，先备份目标 profile 自己的配置补丁，在退出 Desktop 后移除旧 UI 和旧主包，再安装上述一对包。保留现有 Session 和 Workspace 数据以及 `dsh-codex-bridge-ui`、`dsh-codex-bridge-host` 实例 ID 的配置。若自定义补丁中还写了旧的模块 `name`（包括专用 CLI 的入口），把它改为对应 scoped 名称。两个发行渠道各自配套安装。
+
+使用旧 GitHub 归档时，从[旧版 Release](https://github.com/Dannyzhou0512/dsh-codex-bridge/releases/tag/v0.0.10-preview.1)下载配套的两个归档，并按[该版本的指南](https://github.com/Dannyzhou0512/dsh-codex-bridge/blob/v0.0.10-preview.1/docs/USAGE.md)安装。
 
 ## UI
 
@@ -50,7 +50,7 @@ dsh --profile web --patch "<配置补丁绝对路径>"
 
 ## CLI
 
-用公开插件管理器把主包安装到专用 profile，例如 `dsh plugin --profile codex-import add "<主包绝对路径>"`。rc.3 初始化自定义 profile 时会挂载 `dsh-base`，它提供 Session 持久化。再挂载 `@deepseek-ai/dsh-workspace` 和 `dsh-codex-bridge/cli`，即可使用下面的命令。CLI 和用于打开导入结果的 Harness 必须指向同一个 Session 和 Workspace 数据集。
+用公开插件管理器把主包安装到专用 profile，例如 `dsh plugin --profile codex-import add "<主包绝对路径>"`。rc.3 初始化自定义 profile 时会挂载 `dsh-base`，它提供 Session 持久化。再挂载 `@deepseek-ai/dsh-workspace` 和 `@dannyzhou/dsh-codex-bridge/cli`，即可使用下面的命令。使用旧 GitHub 安装包时，CLI 模块名仍为 `dsh-codex-bridge/cli`。CLI 和用于打开导入结果的 Harness 必须指向同一个 Session 和 Workspace 数据集。
 
 在专用 profile 的 `cordis.patch.yml` 中插入以下两项。把 `CLI_CONFIG` 换成[配置示例](P10_CLI_CONFIG_EXAMPLE.json)中的对象，并填写可信 Codex 可执行文件、启动目录和 Codex home。
 
@@ -59,7 +59,7 @@ dsh --profile web --patch "<配置补丁绝对路径>"
     - id: workspace
       name: '@deepseek-ai/dsh-workspace'
     - id: codex-import-cli
-      name: dsh-codex-bridge/cli
+      name: '@dannyzhou/dsh-codex-bridge/cli'
       config: CLI_CONFIG
 ~~~
 

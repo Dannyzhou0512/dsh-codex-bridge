@@ -1,6 +1,6 @@
 /** Standalone companion build: public generator + externalized ModuleLoader factory. */
 import { spawnSync } from 'node:child_process';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { cp, mkdir, writeFile, readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,8 +24,14 @@ for(const name of ['@deepseek-ai/cordis','@deepseek-ai/dsh-brand','zod']){
  if(declaration)analysis.compilerOptions.paths[name]=['./'+relative(root,join(dirname(packageFile),declaration)).replaceAll('\\','/')];
 }
 const protocolName='@deepseek-ai/dsh-typert-protocol';
-const protocolRoot=dirname(require.resolve(protocolName+'/package.json'));
-const protocolManifest=JSON.parse(await readFile(join(protocolRoot,'package.json'),'utf8'));
+const protocolManifestPath=require.resolve(protocolName+'/package.json');
+const protocolManifest=JSON.parse(await readFile(protocolManifestPath,'utf8'));
+// Typert attributes files to the first matching project in package-name order.
+// Keep the protocol project outside the UI tree so scoped names cannot hide its decorators.
+const protocolRoot=join(root,'packages/.bridge-typert-protocol');
+await mkdir(protocolRoot,{recursive:true});
+await cp(protocolManifestPath,join(protocolRoot,'package.json'));
+await cp(join(dirname(protocolManifestPath),'src'),join(protocolRoot,'src'),{recursive:true});
 const protocolConfig=join(protocolRoot,'tsconfig.bridge-analysis.json');
 const protocolSources=Object.entries(protocolManifest.exports).flatMap(([subpath,entry])=>{
  if(subpath.includes('*') || typeof entry?.types!=='string')return [];

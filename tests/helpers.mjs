@@ -19,7 +19,7 @@ export async function cleanup(directory) {
   await rm(directory, { recursive: true, force: true, maxRetries: process.platform === 'win32' ? 3 : 0, retryDelay: 100 });
 }
 export async function stagePlugin(directory, manifestOverride = {}) {
-  const packageDirectory = join(directory, 'node_modules', 'dsh-codex-bridge');
+  const packageDirectory = join(directory, 'node_modules', '@dannyzhou', 'dsh-codex-bridge');
   await mkdir(packageDirectory, { recursive: true });
   const manifest = JSON.parse(await readFile(join(project, 'package.json'), 'utf8'));
   await writeFile(join(packageDirectory, 'package.json'), JSON.stringify({ ...manifest, ...manifestOverride }));

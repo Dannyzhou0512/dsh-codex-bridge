@@ -2,6 +2,8 @@
 
 本仓库以预览项目开源，许可证为 MIT。当前主插件 0.0.10、可选 UI 0.0.9，目标宿主 DSH 0.2.2-rc.3。发布材料仅包含合成夹具和脱敏结果。
 
+npm scoped 包的验证、发布顺序及市场收录准备见 [npm 发布前报告](NPM_PUBLISH_READINESS.md)。
+
 - 干净克隆：根npm ci/typecheck/test/package:verified；UI npm ci/typecheck/test。全部测试仅合成隔离源。
 - 实际tar须有LICENSE、精确peers和预期导出；无SDK runtime、node_modules、ignored证据/secret。
 - 新宿主版本只有在安装包通过版本检查、公开会话服务完成导入和重启读回、旧回执去重通过后，才列入[配套 Skill 的兼容基线](../skills/dsh-codex-bridge/references/workflow.md#compatibility-before-history-access)。单独记录已验证的 Codex App Server 版本和 UI 预览状态。

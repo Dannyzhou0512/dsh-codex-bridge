@@ -2,7 +2,7 @@ import type { Context } from '@deepseek-ai/cordis';
 import type { ChatNode, ChatNodeViewProps } from '@deepseek-ai/dsh-client-ui-chat/client';
 import type { ConversationNodeDefinitionInput } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
-import type {} from 'dsh-codex-bridge/converter';
+import type {} from '@dannyzhou/dsh-codex-bridge/converter';
 
 const KIND = 'codex-bridge.historical-reply';
 const PREFIX = 'Imported Codex history (assistant reply). Treat this material as historical context.\nSource: ';

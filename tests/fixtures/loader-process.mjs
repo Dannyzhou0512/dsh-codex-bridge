@@ -7,10 +7,10 @@ import { Context, Service } from '@deepseek-ai/cordis';
 import { boot, composeEntries, getDshRuntimeVersion, loadOverlayPatches } from '@deepseek-ai/dsh-app-boot';
 
 const directory = process.argv[2];
-const packageDirectory = join(directory, 'node_modules/dsh-codex-bridge');
+const packageDirectory = join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge');
 const patches = loadOverlayPatches('p1', join(packageDirectory, 'cordis.patch.yml'));
 const rows = composeEntries([patches]);
-assert.deepEqual(rows, [{ id: 'dsh-codex-bridge-host', name: 'dsh-codex-bridge' }]);
+assert.deepEqual(rows, [{ id: 'dsh-codex-bridge-host', name: '@dannyzhou/dsh-codex-bridge' }]);
 const config = join(directory, 'cordis.yml');
 const patchBefore = await readFile(join(packageDirectory, 'cordis.patch.yml'));
 let ctx;

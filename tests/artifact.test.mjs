@@ -17,7 +17,7 @@ test('manifest, patch and built ESM keep only the P1 service form and external h
     assert.equal(manifest.devDependencies[name], manifest.peerDependencies[name]);
   }
   assert.deepEqual(composeEntries([loadOverlayPatches('p1', join(project, 'cordis.patch.yml'))]),
-    [{ id: 'dsh-codex-bridge-host', name: 'dsh-codex-bridge' }]);
+    [{ id: 'dsh-codex-bridge-host', name: '@dannyzhou/dsh-codex-bridge' }]);
   const built = await readFile(join(project, 'lib/index.js'), 'utf8');
   const parsed = ts.createSourceFile('index.js', built, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   const imports = parsed.statements.filter(ts.isImportDeclaration).map(node => node.moduleSpecifier.text);

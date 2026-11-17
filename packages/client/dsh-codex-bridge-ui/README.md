@@ -1,6 +1,6 @@
-# dsh-codex-bridge-ui
+# @dannyzhou/dsh-codex-bridge-ui
 
-Optional, independent Client companion 0.0.9 for DeepSeek Harness 0.2.2-rc.3 and dsh-codex-bridge 0.0.10 (exact peers). Adds “Codex history” to the public sidebar and main slots. Browses public App Server history, previews context, reviews selected sessions and Workspace mappings, and supports dry-run and explicit import.
+Optional Client companion 0.0.9 for DeepSeek Harness 0.2.2-rc.3 and `@dannyzhou/dsh-codex-bridge@0.0.10` (exact peer). Install both scoped packages in the same profile. Adds “Codex history” to the public sidebar and main slots. Browses public App Server history, previews context, reviews selected sessions and Workspace mappings, and supports dry-run and explicit import.
 
 The default bundle is unconfigured and performs no startup I/O. Configure its `dsh-codex-bridge-ui` Host row in your trusted profile patch with `enabled: true`, `reader` (the public ReaderOptions shape), and optionally `writeEnabled: true`. Writes default to false. No accepted losses can be configured globally. Browser RPCs cannot set executables, launch args or Codex home. Do not expose a shared authenticated Host to untrusted users; random review handles are short-lived bearer capabilities within that Host.
 

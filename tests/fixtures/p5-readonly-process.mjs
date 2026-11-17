@@ -12,11 +12,11 @@ import { pathToFileURL } from 'node:url';
 const directory = process.argv[2];
 const target = join(directory, 'readonly directory');
 await promises.mkdir(target);
-const require = createRequire(join(directory, 'node_modules/dsh-codex-bridge/package.json'));
-const moduleUrl = pathToFileURL(require.resolve('dsh-codex-bridge/workspace')).href;
+const require = createRequire(join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge/package.json'));
+const moduleUrl = pathToFileURL(require.resolve('@dannyzhou/dsh-codex-bridge/workspace')).href;
 const sources = new Map();
 for (const folder of ['workspace', 'converter']) {
-  const root = join(directory, 'node_modules/dsh-codex-bridge/lib', folder);
+  const root = join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge/lib', folder);
   for (const name of await promises.readdir(root)) {
     if (!name.endsWith('.js')) continue;
     const url = pathToFileURL(join(root, name)).href;

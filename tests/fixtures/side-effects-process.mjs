@@ -15,7 +15,7 @@ import { Context, Service } from '@deepseek-ai/cordis';
 
 const directory = process.argv[2];
 // Node's own module transport needs filesystem reads; feed the exact artifact before guarding plugin execution.
-const moduleUrl = pathToFileURL(join(directory, 'node_modules/dsh-codex-bridge/lib/index.js')).href;
+const moduleUrl = pathToFileURL(join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge/lib/index.js')).href;
 const moduleSource = await promises.readFile(new URL(moduleUrl), 'utf8');
 const cordisUrl = import.meta.resolve('@deepseek-ai/cordis');
 const moduleHooks = registerHooks({

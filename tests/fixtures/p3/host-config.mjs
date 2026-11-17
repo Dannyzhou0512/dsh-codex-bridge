@@ -25,6 +25,6 @@ export function hostEntries(directory, bridge = true, compression = 'none') {
   mount('@deepseek-ai/dsh-api-gateway');
   mount('@deepseek-ai/dsh-api-session-controller', { nativeOpen: false });
   mount('p3-mock-model');
-  if (bridge) mount('dsh-codex-bridge', undefined, 'dsh-codex-bridge-host');
+  if (bridge) mount('@dannyzhou/dsh-codex-bridge', undefined, 'dsh-codex-bridge-host');
   return rows;
 }

@@ -36,6 +36,7 @@ scripts/verify-p14-evidence.mjs
 scripts/verify-p15-evidence.mjs
 # Generated type-analysis configuration; build.mjs regenerates it.
 /tsconfig.host.json
+/packages/.bridge-typert-protocol/
 .env
 .env.*
 *.log

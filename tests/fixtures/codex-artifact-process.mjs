@@ -5,13 +5,13 @@ import { syncBuiltinESMExports, createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const directory = process.argv[2];
-const require = createRequire(join(directory, 'node_modules/dsh-codex-bridge/package.json'));
+const require = createRequire(join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge/package.json'));
 let launches = 0;
 const original = childProcess.spawn;
 childProcess.spawn = () => { launches++; throw new Error('Lazy artifact must not launch a child'); };
 syncBuiltinESMExports();
 try {
-  const adapter = await import(pathToFileURL(require.resolve('dsh-codex-bridge/codex')).href);
+  const adapter = await import(pathToFileURL(require.resolve('@dannyzhou/dsh-codex-bridge/codex')).href);
   assert.deepEqual(Object.keys(adapter).sort(), ['CodexHistoryReader', 'CodexReadError']);
   const reader = new adapter.CodexHistoryReader({
     executable: process.execPath, args: ['app-server', '--stdio'], cwd: directory, codexHome: directory,

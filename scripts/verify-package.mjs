@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { cp, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
-import { basename, join, resolve, sep } from 'node:path';
+import { basename, dirname, join, resolve, sep } from 'node:path';
 import ts from 'typescript';
 import { allocate, cleanup, project, runFixture } from '../tests/helpers.mjs';
 const current = JSON.parse(await readFile(join(project, 'package.json'), 'utf8'));
-const archive = resolve(project, process.argv[2] ?? '.artifacts/dsh-codex-bridge-' + current.version + '.tgz');
+const pointer = join(project, '.artifacts/latest-main-package.json');
+const archive = resolve(project, process.argv[2] ?? JSON.parse(await readFile(pointer, 'utf8')).archive);
 assert(archive.startsWith(join(project, '.artifacts') + sep), 'Inspect only project artifacts');
 function tar(args) {
   const result = spawnSync('tar', args, { cwd: project, encoding: 'utf8', windowsHide: true, maxBuffer: 1024 * 1024 });
@@ -46,7 +47,10 @@ const expected = ['package/LICENSE', 'package/README.md', 'package/cordis.patch.
 const files = tar(['-tf', archive]).trim().split(/\r?\n/).sort();
 assert.deepEqual(files, expected, 'Unexpected archive content, sources or embedded runtime');
 const manifest = JSON.parse(tar(['-xOf', archive, 'package/package.json']));
+assert.equal(manifest.name, '@dannyzhou/dsh-codex-bridge');
 assert.equal(manifest.version, current.version);
+assert.equal(manifest.license, 'MIT');
+assert.equal(manifest.publishConfig.access, 'public');
 assert.deepEqual(manifest.dependencies, { zod: '4.6.5', commander: '15.0.0' });
 assert.equal(manifest.bundleDependencies, undefined);
 assert.equal(manifest.bundledDependencies, undefined);
@@ -76,8 +80,9 @@ let composition, adapter, converter, workspaceMapper, planner, importer, nativeI
 try {
   // Only extract after validating all exact traversal-free entry names.
   tar(['-xf', archive, '-C', directory]);
-  await mkdir(join(directory, 'node_modules'), { recursive: true });
-  await rename(join(directory, 'package'), join(directory, 'node_modules/dsh-codex-bridge'));
+  const packageDirectory = join(directory, 'node_modules', manifest.name);
+  await mkdir(dirname(packageDirectory), { recursive: true });
+  await rename(join(directory, 'package'), packageDirectory);
   await writeFile(join(directory, 'cordis.yml'), '[]\n');
   composition = await runFixture('loader-process.mjs', directory);
   adapter = await runFixture('codex-artifact-process.mjs', directory);

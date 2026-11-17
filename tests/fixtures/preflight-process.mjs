@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { boot, getDshRuntimeVersion, loadOverlayPatches } from '@deepseek-ai/dsh-app-boot';
 
 const directory = process.argv[2];
-const packageDirectory = join(directory, 'node_modules/dsh-codex-bridge');
+const packageDirectory = join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge');
 const manifest = JSON.parse(await readFile(join(packageDirectory, 'package.json'), 'utf8'));
 await writeFile(join(packageDirectory, 'lib/index.js'), 'throw new Error("P1 poison module was imported");\n');
 const profile = {

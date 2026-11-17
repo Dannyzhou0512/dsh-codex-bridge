@@ -1,5 +1,5 @@
 {
-  "name": "dsh-codex-bridge",
+  "name": "@dannyzhou/dsh-codex-bridge",
   "version": "0.0.10",
   "description": "DSH 0.2.2-rc.3 Codex history bridge with an opt-in profile CLI and reviewed native imports.",
   "type": "module",

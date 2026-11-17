@@ -25,7 +25,7 @@ export async function createProfile(root, config = cliConfig(root), profileName 
   const directory = join(root, 'profiles', profileName), bundle = join(directory, 'node_modules/p10-synthetic-profile');
   await mkdir(bundle, { recursive: true }); await mkdir(join(root, '目标 中文 spaces'), { recursive: true });
   await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'p10-test-profile', private: true,
-    dependencies: { 'dsh-codex-bridge': '0.0.10' }, dsh: { profile: { bundles: ['p10-synthetic-profile', 'dsh-codex-bridge'] } } }));
+    dependencies: { '@dannyzhou/dsh-codex-bridge': '0.0.10' }, dsh: { profile: { bundles: ['p10-synthetic-profile', '@dannyzhou/dsh-codex-bridge'] } } }));
   await writeFile(join(directory, 'cordis.patch.yml'), '[]\n');
   const rows = [
     { id: 'session', name: '@deepseek-ai/dsh-session' },
@@ -34,7 +34,7 @@ export async function createProfile(root, config = cliConfig(root), profileName 
     { id: 'storage-domain', name: '@deepseek-ai/dsh-storage-domain', config: { backend: 'json' } },
     { id: 'persistence', name: '@deepseek-ai/dsh-session-persistence-jsonl', config: { root: join(root, 'sessions'), compression: 'zstd' } },
     { id: 'workspace', name: '@deepseek-ai/dsh-workspace' },
-    { id: 'bridge-cli', name: 'dsh-codex-bridge/cli', config },
+    { id: 'bridge-cli', name: '@dannyzhou/dsh-codex-bridge/cli', config },
   ];
   await writeFile(join(bundle, 'cordis.patch.yml'), JSON.stringify([{ insert: rows }]));
   await writeFile(join(bundle, 'package.json'), JSON.stringify({ name: 'p10-synthetic-profile', version: '0.0.0', type: 'module',

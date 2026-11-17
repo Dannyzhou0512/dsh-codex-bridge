@@ -13,12 +13,12 @@ import { publicSnapshot, options } from './p4-data.mjs';
 const directory = process.argv[2], cwd = join(directory, 'p9-readonly');
 await promises.mkdir(cwd);
 const source = publicSnapshot(); source.thread.cwd = cwd;
-const require = createRequire(join(directory, 'node_modules/dsh-codex-bridge/package.json'));
-const url = name => pathToFileURL(require.resolve('dsh-codex-bridge/' + name)).href;
+const require = createRequire(join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge/package.json'));
+const url = name => pathToFileURL(require.resolve('@dannyzhou/dsh-codex-bridge/' + name)).href;
 const importerUrl = url('importer'), batchUrl = url('batch');
 const plannerUrl = url('planner'), mapperUrl = url('workspace'), sources = new Map();
 for (const folder of ['batch', 'importer', 'planner', 'workspace', 'converter', 'codex']) {
-  const root = join(directory, 'node_modules/dsh-codex-bridge/lib', folder);
+  const root = join(directory, 'node_modules/@dannyzhou/dsh-codex-bridge/lib', folder);
   for (const name of await promises.readdir(root)) if (name.endsWith('.js')) {
     const location = pathToFileURL(join(root, name)).href;
     sources.set(location, await promises.readFile(new URL(location), 'utf8'));
